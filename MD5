@@ -1,4 +1,4 @@
-f343aa54ec6dede29126ad64077ac5a5 *DESCRIPTION
+ddb9581ed12c3ab09e5be2cf84de28c7 *DESCRIPTION
 99aed12a976f59d86c402f5d4692c912 *NAMESPACE
 063a2799ef4afe25590b705333f7ebfd *R/bxcx.R
 91c68bf35d0973c3f40033bf19036a91 *R/diagonalizematrix.R
@@ -12,14 +12,15 @@ f8d2c15b6054945eb8f178bd9856bca8 *R/eblupFH.R
 42aa95a57a4bf8627744c780d141c5ba *R/mseSFH.R
 b3bcfab68f57a9acbdd502eed99a7a92 *R/npbmseSFH.R
 557d0223a007650658adc9afe2119d7f *R/pbmseBHF.R
-7fbdfcee08a63b22eec06e6c62b6fa3c *R/pbmseSFH.R
+4725ef37620b7150da290bf0b6978cdb *R/pbmseSFH.R
 92a933eebc474ae1f44e03c1f47b1665 *R/pbmseSTFH.R
 a6df6238853f1c23524905184fee9ce8 *R/pbmseebBHF.R
 03d229f287642bd63ac739b9deab2b58 *R/pssynt.R
 6276b31d20af13e1ddca2ecb7920cfe1 *R/ssd.R
+85c86294503320476a31f2e6f29feebd *build/vignette.rds
 ae12da5da8d49cdb8c39cd5494f0510d *data/Xoutsamp.rda
 13312b4dc8688adafb7bc0d3ff9c8a4c *data/cornsoybean.rda
-c0e4cf00d3beb0770e9e9fe1814257b1 *data/cornsoybeanmeans.rda
+8e7d748bc9fd026ddfd9cfa67152a9ba *data/cornsoybeanmeans.rda
 8baccc647b2d167cbe3341da87c7946d *data/grapes.rda
 cae091f7227800ef1e127a5126563f73 *data/grapesprox.rda
 7471d24aff0d04b01c99062644cd4c53 *data/incomedata.rda
@@ -31,6 +32,12 @@ ae9e3adc9271530b88e7e4441cf47d4b *data/sizeprovlab.rda
 5dc39313906ac91122799e0bb6abd128 *data/sizeprovnat.rda
 b2d3b909c2a5bef0d324d09214d6f9ac *data/spacetime.rda
 f9cb68756ecab4c3356f224dbe734ed5 *data/spacetimeprox.rda
+fb3ef11da4b482e3422335debdc7acbc *inst/CITATION
+6e051e35d32c4c559d92c74ea5444546 *inst/doc/sae_basicdirect.R
+5df25067e2f40cb25552eb96873db46a *inst/doc/sae_basicdirect.Rnw
+1073e2ceae2f61c7ea5bdfed87aa5c08 *inst/doc/sae_basicdirect.pdf
+3f94d6c097a290967c078cc1d3556be5 *inst/doc/sae_methodology.Rnw
+24a87c8258c302e9fbddcf32ffdc24c5 *inst/doc/sae_methodology.pdf
 ab86d55aaa68b2ca4f72e7cbe533b158 *man/Xoutsamp.Rd
 7ef62db8f06538efe81232c6c3757ada *man/bxcx.Rd
 b5c47a1083c7648a3e99b31ed1655936 *man/cornsoybean.Rd
@@ -54,7 +61,7 @@ ac7bf574d3058aad461df1d2ed0e8d38 *man/npbmseSFH.Rd
 7ab8dcff96cdfb1c001db5638db1701f *man/pbmseSTFH.Rd
 e7d817236564ea91e5eb91ef6f31c52f *man/pbmseebBHF.Rd
 908a4c47e8126521afc8b4b7ff06b0f9 *man/pssynt.Rd
-44fbc37b63b22c72e07949deb577b985 *man/sae-package.Rd
+6fe75a2033ac4f79ac8b94c1907e1057 *man/sae-package.Rd
 725aaf46c7ad9d3045ad471ae34211d1 *man/sizeprov.Rd
 d7cc35a205eff74a339b18c6291f865f *man/sizeprovage.Rd
 8e36a71a9d2babbb671b27b95af8a922 *man/sizeprovedu.Rd
@@ -63,3 +70,5 @@ b1d3bfc5b6dfff55a16f309a47c0f31a *man/sizeprovnat.Rd
 02103ec974a1faf100773ce6cf6b8bd7 *man/spacetime.Rd
 103998312d32b1882a6718e649cd24f3 *man/spacetimeprox.Rd
 d0166a2804f0b24b9811e787f22c01ab *man/ssd.Rd
+5df25067e2f40cb25552eb96873db46a *vignettes/sae_basicdirect.Rnw
+3f94d6c097a290967c078cc1d3556be5 *vignettes/sae_methodology.Rnw

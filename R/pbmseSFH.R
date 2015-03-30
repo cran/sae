@@ -115,10 +115,10 @@ function(formula,vardir,proxmat,B=100,method="REML",MAXITER=100,PRECISION=0.0001
       resultsSp  <-eblupSFH(direct.boot~X-1,vardir,proxmat,method,MAXITER,PRECISION)
 
       # Generate a new sample if estimators are not satisfactory
-      # Ahora la varianza siempre va a ser >=0 y la correlación dentro del rango, esto no debería salir
+      # As variance is >=0 and correlation is within the range, this message is not printed
       if (resultsSp$fit$convergence==FALSE | resultsSp$fit$refvar<0 | resultsSp$fit$spatialcorr<(-1) | resultsSp$fit$spatialcorr>1)
       {
-         print("eblupSFH: Este mensaje no deberia salir, se obliga a que los parametros dentro del rango")
+         print("eblupSFH: If this message is printed, please contact with the authors of the package sae.")
          next
       }
       cat("b =",boot,"\n")

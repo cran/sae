@@ -1,0 +1,259 @@
+%\VignetteIndexEntry{Basic direct and indirect estimators}
+
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+
+ \title{Basic direct and indirect estimators in sae package}
+\author{
+Isabel Molina\footnote{Department of Statistics, Universidad
+Carlos III de Madrid. Address: C/Madrid 126, 28903 Getafe
+(Madrid), Spain, Tf: +34 916249887, Fax: +34 916249849, E-mail:
+isabel.molina@uc3m.es}, Yolanda Marhuenda}
+\date{March, 2015}
+
+\begin{document}
+\SweaveOpts{concordance=TRUE}
+\maketitle
+
+This document presents design unbiased direct estimators
+ and simple indirect estimators of domain means $\bar Y_d$, $d=1,\ldots,D$.
+ For a general random sampling without replacement
+ within each domain $U_d$. We denote by $\pi_{dj}$ the inclusion probability of $j$-th unit
+ from $d$-th domain in the corresponding domain sample $s_d$ and
+ $w_{dj}=\pi_{dj}^{-1}$ is the corresponding sampling weight. A design-unbiased direct estimator of $\bar Y_d$ is the Horvitz-Thompson (HT)
+ estimator, given by
+ \begin{equation}\label{HTest}
+\hat{\bar{Y}}_d^{DIR}=N_d^{-1}\sum_{j\in s_d}w_{dj}Y_{dj}.
+ \end{equation}
+ Unbiased estimation of the sampling variance of the HT estimator requires
+ availability of the second order inclusion probabilities $\pi_{d,jk}$ of each pair of units $j$ and $k$ in $s_d$.
+ A simple approximation that avoids the use of second order inclusion probabilities
+ is obtained by considering $\pi_{d,jk}\approx \pi_{dj}\pi_{dk}$ and is given by
+ \begin{equation}\label{estvar}
+ \hat V_{\pi}(\hat{\bar{Y}}_d^{DIR})=\frac{1}{N_d^2}\sum_{j\in
+ s_d}w_{dj}(w_{dj}-1)Y_{dj}^2.
+ \end{equation}
+ Under Poisson sampling, $\pi_{d,jk}= \pi_{dj}\pi_{dk}$ and in that case the estimator in (\ref{estvar}) is exactly unbiased.
+ Under simple random sampling (SRS) without replacement within each area $U_d$, $d=1,\ldots,D$,
+ the HT estimator of the mean $\bar{Y}_d$ is the usual sample mean
+ $\hat{\bar Y}_d=\bar y_d=n_d^{-1}\sum_{j \in s_d}Y_{dj}$, and the
+ (exactly) unbiased estimator of the sampling variance is $\hat V_{\pi}(\hat{\bar{Y}}_d^{DIR})=(1-f_d)S_{d}^2/n_d$,
+ for $S_d^2=\sum_{j\in s_d}(Y_{dj}-\bar y_d)^2/(n_d-1)$.
+
+When the sampling is with replacement within each domain $U_d$, and units are selected with probabilities $P_{dj}$, $j=1,\ldots,N_d$, proportional to some size measure, if we define new weights $w_{dj}=(n_dP_{dj})^{-1}$, the estimator defined in (\ref{HTest}) remains unbiased and the unbiased estimator of the sampling variance is given by
+%badbox
+$$
+\hat V_{\pi}(\hat{\bar Y}_d^{DIR})=\frac{1}{n_d}\sum_{j\in s_d}\left(f_dw_{dj}Y_{dj}-\hat{\bar Y}_d\right)^2,
+$$
+which becomes $S_d^2/n_d$ under SRS with replacement.
+
+The post-stratified synthetic estimator assumes that data are distributed into $K$ (large)
+groups called post-strata that cut across the domains, and such
+that the within group mean is constant across domains, that is, if
+$\bar Y_{dk}$ denotes the mean in the crossing of post-stratum
+$k$ and domain $d$ and $\bar Y_{+k}$ is the mean of post-stratum $k$, it holds that
+$\bar Y_{dk}=\bar Y_{+k}$, $k=1,\ldots,K$.
+The groups are assumed to have large enough sample sizes to allow direct
+estimation with high efficiency. Since the mean of domain $d$ is given by
+$\bar Y_d=N_d^{-1}\sum_{k=1}^K N_{dk}\bar Y_{dk}$,
+replacing $\bar Y_{dk}=\bar Y_{+k}$ by the ratio HT estimator
+$\hat{\bar Y}_{+k}^R=\hat Y_{+k}^{DIR}/\hat N_{+k}^{DIR}$, where
+$\hat Y_{+k}^{DIR}$ is the direct estimator of the total in
+post-stratum $k$ and $\hat N_{+k}$ is the direct estimator of the
+population size $N_{+k}$ in the same post-stratum, we obtain
+the post-stratified synthetic estimator
+$$
+\hat{\bar Y}_d^{SYN}=\frac{1}{N_d}\sum_{k=1}^K N_{dk}\hat{\bar
+Y}_{+k}^R.
+$$
+Note that this estimator requires the population sizes of the crossings between each post-stratum
+$k$ and domain $d$, $N_{dk}$ for all $k$ and $d$.
+
+The direct estimator is inefficient for a domain with small
+sample size. On the other hand, the post-stratified synthetic
+estimator is biased when the assumption of constant means
+across domains within a stratum does not hold.
+To balance the bias of a synthetic estimator and the
+instability of the direct estimator,
+\cite{DrewSinghChoudhry82} 
+proposed the sample-size dependent (SSD) estimator defined
+as a composition of the two mentioned estimators, that is,
+$$
+\hat{\bar Y}_d^{SSD}=\phi_d\hat{\bar Y}_d^{DIR}+(1-\phi_d)\hat{\bar
+Y}_d^{SYN},
+$$
+where the composition weight $\phi_d$ depends on the sample size
+of the domain as
+$$
+\phi_d=\left\{\begin{array}{cc} 1,& \hat N_d^{DIR}\geq \delta N_d; \\
+\hat N_d^{DIR}/(\delta N_d),& \hat N_d^{DIR}< \delta N_d,\end{array}\right.
+$$
+for a given constant $\delta>0$ that controls how much weight is attached to the
+synthetic estimator, with larger value of $\delta$ meaning that more strength is borrowed from other domains.
+However, if the expected sample size is small, then the SSD estimator is not borrowing strength
+in domains $d$ with $\hat N_d^{DIR}\geq \delta N_d$ even if they have small sample sizes.
+
+Functions \texttt{direct()}, \texttt{pssynt()} and \texttt{ssd()} give respectively direct, post-stratified synthetic and sample size dependent estimates. 
+The calls to these functions are:
+\begin{verbatim}
+direct(y, dom, sweight, domsize, data, replace = FALSE)
+pssynt(y, sweight, ps, domsizebyps, data)
+ssd(dom, sweight, domsize, direct, synthetic, delta = 1, data)
+\end{verbatim}
+
+Function \texttt{direct()} returns unbiased direct estimates of the area means,
+ where the result depends on the sampling design specified
+ through the sampling weight vector \texttt{sweight} and the
+ argument \texttt{replace} for with or without replacement sampling.
+ We must provide the area population sizes in the data frame
+ \texttt{domsize}, whose first column must contain the
+ area codes.
+
+In \texttt{pssynt()}, we must specify
+ our selected post-stratifying variable in argument \texttt{ps}.
+ The population sizes of each crossing between domain and post-strata
+ must be specified in the data frame \texttt{domsizebyps}, whose first column
+ must be again the area codes.
+
+
+Function \texttt{ssd()} gives SSD estimators obtained by composition of
+ direct and synthetic estimators. We need to introduce the direct estimators (\texttt{direct})
+ and the synthetic estimators (\texttt{synthetic}) to compose, together with
+ the constant $\delta$ (\texttt{delta}) involved in the SSD estimator.
+ Domain codes (\texttt{dom}) and domain population sizes (\texttt{domsize})
+ are also required arguments.
+
+The vector of sampling weights (\texttt{sweight})
+must be included in the three functions.
+The variables specified in \texttt{y}, \texttt{dom}, \texttt{sweight} and \texttt{ps} can be selected from the data set specified in argument \texttt{data}.
+
+\subsection*{Example. Poverty mapping}
+In this example, we calculate several simple estimates of poverty incidences in Spanish provinces, namely
+direct estimates, post-stratified synthetic estimates with education levels 
+as post-strata and SSD estimates obtained from the composition of direct and post-stratified synthetic estimates.
+
+The poverty incidence for a province is the province mean of a binary variable taking value 1 when person's income is below a given poverty line and 0 otherwise. Direct estimates can be obtained easily applying the usual theory for means to this
+binary variable. First, we load the data set \texttt{incomedata} containing the input data for each individual and the data sets \texttt{sizeprov} and \texttt{sizeprovedu} containing the population sizes and the population sizes by education level, respectively.
+
+<<>>=
+library("sae")
+data("incomedata")
+data("sizeprov")
+data("sizeprovedu")
+@
+
+Next, we define the poverty line \texttt{z}, calculate the binary
+variable \texttt{poor}, with value \texttt{1} if the corresponding
+income value is below the poverty line and \texttt{0} otherwise, and 
+calculate province poverty incidences as province means of this
+variable.
+
+<<>>=
+z <- 6557.143
+poor <- as.integer(incomedata$income < z)
+@
+
+We use the province name \texttt{provlab} as the domain code (\texttt{dom}) and
+calculate direct estimates \texttt{DIR}.
+
+<<>>=
+Popn <- sizeprov[, c("provlab", "Nd")]
+DIR <- direct(y = poor, dom = incomedata$provlab, 
+              sweight = incomedata$weight, domsize = Popn)
+@
+
+Next, we calculate post-stratified synthetic estimates with
+education levels as post-strata. For the function \texttt{pssynt()},
+we construct the data frame \texttt{domsizebyps}, containing the
+domain codes \texttt{provlab} in the first column and, in the remaining columns,
+the province sizes by education level. The names of the columns
+(except for the first one) in this data frame must be the
+education levels, namely \texttt{0} (age<16), \texttt{1} (primary education),
+\texttt{2} (secondary education) and \texttt{3} (post-secondary
+education):
+
+<<>>=
+Popn.educ <- sizeprovedu[,-2]
+colnames(Popn.educ) <- c("provlab","0", "1", "2", "3")
+PSYN.educ <- pssynt(y = poor, sweight = incomedata$weight, 
+                    ps = incomedata$educ, 
+                    domsizebyps = Popn.educ)
+@
+
+We calculate SSD estimates by composition of the previous direct
+and post-stratified estimates, and taking the default value
+\texttt{delta=1} in function \texttt{ssd()}. Again, the first columns
+of \texttt{domsize}, \texttt{direct} and \texttt{synthetic} must be the
+province names.
+
+<<>>=
+SSD <- ssd(dom = provlab, sweight = weight, domsize = Popn, 
+           direct = DIR[, c("Domain", "Direct")], 
+           synthetic = PSYN.educ, data = incomedata)
+@
+
+We collect the province names, sample sizes and the three sets of percent poverty incidence estimates in the data frame \texttt{results}: 
+
+<<>>=
+results <- data.frame(Province = DIR$Domain, 
+                      SampleSize = DIR$SampSize, 
+                      DIR = DIR$Direct * 100, 
+                      PSYN.educ = PSYN.educ$PsSynthetic * 100, 
+                      SSD = SSD$ssd * 100)
+print(results, row.names = FALSE)
+@
+
+These estimates are plotted in the Figure
+%~\ref{AllEstimates} 
+for
+each province (area), with provinces sorted by decreasing sample
+size. This Figure shows that direct estimates and SSD estimates are very similar,
+with direct estimates slightly more
+unstable. However, the post-stratified
+synthetic estimates appear to be too stable, giving practically
+the same values for all provinces. This estimator is based on the
+unrealistic assumption of constant poverty incidence for all the
+population with the same education level and therefore might be
+seriously biased.
+
+\begin{center}
+<<fig=TRUE>>=
+# Sorted results by decreasing sample size
+results <- results[order(results$SampleSize, 
+                         decreasing = TRUE), ]
+plot(results$DIR, type = "n", 
+     xlab = "area (sorted by decreasing sample size)", 
+     ylab = "Estimate", cex.axis = 1.5, cex.lab = 1.5)
+points(results$DIR, type = "b", col = 3, lwd = 2, pch = 1)
+points(results$PSYN.educ, type= "b", col = 5, lwd = 2, pch = 2)
+points(results$SSD, type = "b", col = 2, lwd = 2, pch = 5)
+legend("bottom", legend = c("Direct", "Post-strat educ", "SSD"), 
+       ncol = 1, col = c(3, 5, 2), lwd = rep(2, 3), 
+       pch = c(1, 2, 5), cex = 1.3)
+@
+\end{center}
+
+Comparing direct estimates with the EB estimates of poverty incidences obtained in the data frame \texttt{results.EB} of Example 5 in \cite{MolinaMarhuenda15}, 
+we can see that estimates differ significantly for the 5 selected provinces and the CVs show great gains in efficiency of EB estimates as compared with
+direct estimates.
+<<>>=
+DIR[c("42","5","34","44","40"), -4]
+@
+
+\addcontentsline{toc}{section}{References}
+\begin{thebibliography}{27}
+\expandafter\ifx\csname
+natexlab\endcsname\relax\def\natexlab#1{#1}\fi
+
+\bibitem{DrewSinghChoudhry82} \textsc{Drew, D.}, \textsc{Singh, M.P.} \& \textsc{Choudhry, G.H.} (1982).
+\newblock Evaluation of small area estimation techniques for the Canadian Labour Force Survey.
+\newblock \textit{Survey Methodology} \textbf{8}, 17--47.
+
+\bibitem{MolinaMarhuenda15} \textsc{Molina, I.} \& \textsc{Marhuenda, Y.} (1982).
+\newblock sae: An R package for Small Area Estimation.
+\newblock \textit{R Journal}, Under revision.
+
+\end{thebibliography}
+
+\end{document}

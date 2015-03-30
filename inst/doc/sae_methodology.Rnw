@@ -1,0 +1,2036 @@
+%\VignetteIndexEntry{Methodology}
+
+\documentclass[12pt]{article}
+\usepackage{amsmath,amsthm,amsopn,amstext,amscd,amsfonts,amssymb}
+\usepackage{geometry}
+\usepackage{latexsym,enumerate,bm}
+\usepackage[dvips]{graphicx}
+\usepackage{natbib}
+
+\geometry{a4paper,hmargin={3.3cm,3.3cm},vmargin={3.5cm,3.5cm}}
+
+\def \N{{\cal N}}
+\def \RR{{I\!\!R}}
+\def \diag {\mbox{diag}}
+\def \tr {\mbox{trace}}
+
+ \def \ba {\mathbf a}
+ \def \bA {\mathbf A}
+ \def \bB {\mathbf B}
+ \def \bb {\mathbf b}
+ \def \bC {\mathbf C}
+ \def \bc {\mathbf c}
+ \def \bD {\mathbf D}
+ \def \be {\mathbf e}
+ \def \bF {\mathbf F}
+ \def \bF {{\mathbf F}}
+ \def \bG {\mathbf G}
+ \def \bh {\mathbf h}
+ \def \bH {\mathbf H}
+ \def \bI {\mathbf I}
+ \def \bJ {\mathbf J}
+ \def \bK {\mathbf K}
+ \def \bL {\mathbf L}
+ \def \bM {\mathbf M}
+ \def \bm {\mathbf m}
+ \def \bP {\mathbf P}
+ \def \bP {{\mathbf P}}
+ \def \bp {\mathbf p}
+ \def \bq {\mathbf q}
+ \def \bQ {\mathbf Q}
+ \def \bR {\mathbf R}
+ \def \br {\mathbf r}
+ \def \bS {\mathbf S}
+ \def \bs {\mathbf s}
+ \def \bt {\mathbf t}
+ \def \bT {\mathbf T}
+ \def \bu {\mathbf u}
+ \def \bv {\mathbf v}
+ \def \bV {\mathbf V}
+ \def \bW {\mathbf W}
+ \def \bw {\mathbf w}
+ \def \bX {\mathbf X}
+ \def \bx {\mathbf x}
+ \def \YY {{\mathbf Y}}
+ \def \by {\mathbf y}
+ \def \bY {\mathbf Y}
+ \def \bZ {\mathbf Z}
+ \def \bz {\mathbf z}
+
+ \def \cI {{\cal I}}
+ \def \cX {{\cal X}}
+
+ \def \uno {\mathbf 1}
+ \def \cero {\mathbf 0}
+ \def \balpha {{\boldsymbol \alpha}}
+ \def \bbeta {{\boldsymbol \beta}}
+ \def \bgamma {{\boldsymbol \gamma}}
+ \def \bGamma {{\boldsymbol \Gamma}}
+ \def \bSigma {{\boldsymbol \Sigma}}
+ \def \bPsi {{\boldsymbol \Psi}}
+ \def \btheta {{\boldsymbol \theta}}
+ \def \eeta {{\boldsymbol\eta}}
+ \def \btau {{\boldsymbol \tau}}
+ \def \bDelta {{\boldsymbol\Delta}}
+ \def \bdelta {{\boldsymbol\delta}}
+ \def \bLambda {{\boldsymbol\Lambda}}
+ \def \blambda {{\boldsymbol\lambda}}
+ \def \bnu {{\boldsymbol\nu}}
+ \def \bmu {{\boldsymbol\mu}}
+ \def \bxi {{\boldsymbol\xi}}
+ \def \bepsilon {{\boldsymbol\epsilon}}
+ \def \bPi {{\boldsymbol\Pi}}
+ \def \ds {\displaystyle}
+ \def \trace {\mbox{trace}}
+
+ \newcommand {\bSi} {{\boldsymbol \Sigma}}
+\newcommand {\bbe} {{\boldsymbol \beta}}
+
+\newcommand{\beq}{\begin{equation}}
+\newcommand{\eeq}{\end{equation}}
+
+\newtheorem{remark}{Remark}
+
+ \title{R package sae: Methodology}
+\author{
+Isabel Molina\footnote{Department of Statistics, Universidad
+Carlos III de Madrid. Address: C/Madrid 126, 28903 Getafe
+(Madrid), Spain, Tf: +34 916249887, Fax: +34 916249849, E-mail:
+isabel.molina@uc3m.es}, Yolanda Marhuenda}
+\date{March, 2015}
+
+\begin{document}
+\SweaveOpts{concordance=TRUE}
+
+\maketitle
+
+\tableofcontents
+\newpage
+
+
+\section{Introduction}
+
+The R package \verb"sae" estimates characteristics of the domains of a population, when a
+sample is available from the whole population, but not all the
+target domains have a sufficiently large sample size. This
+document describes the methodology behind the functions of the
+package, giving the exact formulas and procedures implemented in each function.
+
+The following notation will be used through all this document. $U$ denotes the target
+population, assumed to be partitioned into $D$ subsets
+$U_1,\ldots,U_D$ called indistinctly domains or areas, of respective sizes
+$N_1,\ldots,N_D$. The measurement of the variable of interest for
+$j$-th individual within $d$-th area is denoted $Y_{dj}$ and
+$\by_d=(Y_{d1},\ldots,Y_{dN_d})'$ is the vector with the
+measurements for $d$-th area. The target domain parameters have the
+form $\delta_d=h_d(\by_d)$, $d=1,\ldots,D$, for known real measurable
+functions $h_d()$. Particular cases of $\delta_d$ are the domain means
+$$
+\delta_d=\bar Y_d=N_d^{-1}\sum_{j=1}^{N_d}Y_{dj}, \quad
+d=1,\ldots,D.
+$$
+
+
+These parameters are estimated using the information coming from a
+random sample $s$ of size $n$ drawn from $U$. Here, $s_d$ is the
+subsample of size $n_d$ from domain $U_d$, $d =1,\ldots,D$, where
+$n=\sum_{d=1}^Dn_d$, and $r_d=U_d-s_d$ is the sample complement
+from domain $d$, of size $N_d-n_d$, $d=1,\ldots,D$.
+
+\section{Function direct}\label{directSec}
+%
+
+Function \verb"direct" estimates the area means $\bar Y_d$,
+$d=1,\ldots,D$, where, for each area $d$, the estimator of $\bar
+Y_d$ is calculated using only the sample data $s_d$ from that same
+domain $d$. The obtained estimators are unbiased with respect to
+the sampling design (design-unbiased). The call to the function is
+{\small\begin{verbatim}
+direct(y, dom, sweight, domsize, data, replace = FALSE)
+\end{verbatim}}
+%pssynt(y, sweight, ps, domsizebyps, data)
+%ssd(dom, sweight, domsize, direct, synthetic, delta = 1, data)
+
+The particular estimator calculated by the function depends on the
+specified arguments \verb"replace" and \verb"sweight", related to
+the sampling design. If \verb"replace" is \verb"TRUE", the
+sampling design is assumed to be with replacement and otherwise
+without replacement. The sampling weights should be introduced
+through the argument \verb"sweight", but when this argument is dropped, the
+function assumes simple random sampling (SRS). Under SRS, the
+sizes of the domains $N_d$, $d=1,\ldots,D$ (\verb"domsize") are
+unnecessary.
+
+\subsection{Sampling without replacement}\label{SamplingWOR}
+
+Consider that the sample $s_d$ is drawn without replacement within domain
+$U_d$, $d=1,\ldots,D$. Let $\pi_{dj}$ be the inclusion probability of $j$-th unit
+from $d$-th domain in the corresponding domain sample $s_d$ and
+let $w_{dj}=\pi_{dj}^{-1}$ be the corresponding sampling weight.
+The unbiased estimator of $\bar Y_d$ is the Horvitz-Thompson
+estimator, given by
+$$
+\hat{\bar{Y}}_d^{DIR}=N_d^{-1}\sum_{j\in
+s_d}\frac{Y_{dj}}{\pi_{dj}}=N_d^{-1}\sum_{j\in s_d}w_{dj}Y_{dj}.
+$$
+Now let $\pi_{d,jk}$ be the inclusion probability of the pair of
+units $j$ and $k$ from $d$-th domain in the sample $s_d$. The
+sampling variance is given by
+ $$
+ V_{\pi}(\hat{\bar{Y}}_d^{DIR})=\frac{1}{N_d^2}\left\{\sum_{j=1}^{N_d}\frac{Y_{dj}^2}{\pi_{dj}}(1-\pi_{dj})
+ +2\sum_{j=1}^{N_d}\sum_{\underset{k>j}{k=1}}^{N_d}\frac{Y_{dj}}{\pi_{dj}}\frac{Y_{dk}}{\pi_{dk}}(\pi_{d,jk}-\pi_{dj}\pi_{dk})\right\}.
+ $$
+ If $\pi_{d,jk}>0$, $\forall (j,k)$, an unbiased estimator of this variance is given by
+ \begin{equation}\label{varestWOR}
+ \hat V_{\pi}(\hat{\bar{Y}}_d^{DIR})=\frac{1}{N_d^2}\left\{\sum_{j\in s_d}\frac{Y_{dj}^2}{\pi_{dj}^2}(1-\pi_{dj})
+ +2\sum_{j\in s_d}\sum_{\underset{k>j}{k\in s_d}}\frac{Y_{dj}}{\pi_{dj}}\frac{Y_{dk}}{\pi_{dk}}\frac{(\pi_{d,jk}-\pi_{dj}\pi_{dk})}{\pi_{d,jk}}\right\}.
+ \end{equation}
+ This estimator requires the second order inclusion probabilities,
+ but many times these are not available. Then, it is common to
+ find an approximation of (\ref{varestWOR}). A simple approximation is obtained by
+ considering $\pi_{d,jk}\approx \pi_{dj}\pi_{dk}$, which holds exactly
+ in the case of Poisson sampling. This approximation makes the second sum in (\ref{varestWOR})
+ equal to zero and leads to the estimator
+ $$
+ \hat V_{\pi}(\hat{\bar{Y}}_d^{DIR})=\frac{1}{N_d^2}\sum_{j\in
+ s_d}\frac{1-\pi_{dj}}{\pi_{dj}^2}Y_{dj}^2.
+ $$
+ Writing the approximate
+ unbiased estimator of the variance in terms of the sampling weights $w_{dj}$ (\verb"sweight"),
+ we get the expression provided by function \verb"direct" when the argument \verb"sweight" is specified,
+ $$
+ \hat V_{\pi}(\hat{\bar{Y}}_d^{DIR})=\frac{1}{N_d^2}\sum_{j\in
+ s_d}w_{dj}(w_{dj}-1)Y_{dj}^2.
+ $$
+ Under SRS without replacement, the result of the previous estimator
+ does not coincide with the usual unbiased estimator. Thus, when the argument \verb"sweight" is dropped,
+ the function \verb"direct" assumes SRS without replacement and returns the usual
+ unbiased estimators under this design
+ $$
+ \hat{\bar Y}_d=\bar y_d=n_d^{-1}\sum_{j \in s_d}Y_{dj},\quad \hat V_{\pi}(\hat{\bar{Y}}_d^{DIR})=(1-f_d)\frac{S_{d}^2}{n_d},
+ $$
+ where $f_d=n_d/N_d$ is the domain sampling fraction and $S_d^2$
+ is the domain quasi-variance
+ $S_d^2=(n_d-1)^{-1}\sum_{j\in s_d}(Y_{dj}-\bar y_d)^2$.
+
+ \subsection{Sampling with replacement}\label{SamplingWR}
+
+ Now consider the case in which $s_d$ is drawn with replacement within domain
+$U_d$, $d=1,\ldots,D$, with initial selection probabilities $P_{dj}$, $j=1,\ldots,N_d$.
+In this case, the unbiased estimator of the domain mean is given by
+ $$
+ \hat{\bar Y}_d^{DIR}=N_d^{-1}\sum_{j\in s_d}\frac{Y_{dj}}{n_dP_{dj}}.
+ $$
+ To obtain this estimator, the argument \verb"sweight"
+ must contain the vector of weights calculated as $w_{dj}=(n_dP_{dj})^{-1}$, $j\in s_d$, $d=1,\ldots,D$.
+ Using these weights, the unbiased estimator of $\bar Y_d$ calculated by the function
+ \verb"direct" with \verb"replace=TRUE" has exactly the same shape as that one in Section \ref{SamplingWOR}, i.e.
+ $$
+ \hat{\bar{Y}}_d^{DIR}=N_d^{-1}\sum_{j\in s_d}w_{dj}Y_{dj}.
+ $$
+ The sampling variance of this estimator is given by
+ $$
+ V_{\pi}(\hat{\bar{Y}}_d^{DIR})=\frac{1}{n_d}\sum_{j=1}^{N_d}\left(\frac{Y_{dj}}{N_d P_{dj}}-\bar Y_d\right)^2P_{dj}.
+ $$
+ and using again $w_{dj}=(n_dP_{dj})^{-1}$, we obtain the unbiased variance estimator calculated by the function \verb"direct",
+ $$
+ \hat V_{\pi}(\hat{\bar{Y}}_d^{DIR})=\frac{1}{n_d}\sum_{j\in s_d}\left(\frac{Y_{dj}}{N_d P_{dj}}-\hat{\bar{Y}}_d^{DIR}\right)^2
+ =\frac{1}{n_d}\sum_{j\in s_d}\left(f_dw_{dj}Y_{dj}-\hat{\bar
+ Y}_d\right)^2.
+ $$
+ Under SRS with replacement, the population sizes $N_d$ (\verb"domsize") are not needed. Thus, when the argument \verb"domsize" is
+ dropped, the function assumes SRS and calculates the classical unbiased estimators
+ $$
+ \hat{\bar{Y}}_d^{DIR}=\bar y_d=n_d^{-1}\sum_{j \in s_d}Y_{dj},\quad \hat V_{\pi}(\hat{\bar{Y}}_d^{DIR})=n_d^{-1}S_d^2.
+ $$
+
+\section{Function pssynt}\label{directSec}
+
+Indirect estimators ``borrow strength" from other domains by
+making assumptions establishing some homogeneity relationship among
+domains. The post-stratified synthetic estimator is a basic
+indirect estimator. It assumes that data are distributed into
+$K$ groups (called post-strata) that cut across the domains, and
+such that the within group mean is constant across domains. The
+groups are assumed to have sufficient sample sizes to allow obtaining
+accurate direct estimates of the group means. These assumptions
+allow us to estimate a domain mean using a weighted combination of
+the (reliable) estimates of the group means. The function
+\verb"pssynt" calculates post-stratified synthetic estimates of
+the domain means $\bar Y_d$, $d=1,\ldots,D$. The call to this
+function is
+\begin{verbatim}
+pssynt(y, sweight, ps, domsizebyps, data)
+\end{verbatim}
+
+More specifically, the post-stratified synthetic estimator
+considers that there is a grouping variable (\verb"ps") which
+divides the data into $K$ post-strata. The population count in the
+crossing between post-stratum $k$ and domain $d$, $N_{dk}$
+(\verb"domsizebyps"), is assumed to be known for all $k$ and $d$
+with $N_d=\sum_{k=1}^K N_{dk}$. Then, the mean of domain $d$ can
+be calculated as a weighted combination of the means in the
+crossings of domain $d$ with each post-strata $\bar Y_{dk}$,
+$k=1,\ldots,K$, as follows
+\begin{equation}\label{meandps}
+\bar Y_d=\frac{1}{N_d}\sum_{k=1}^K N_{dk}\bar Y_{dk}.
+\end{equation}
+Under the assumption of constant mean across domains within each post-stratum,
+$$
+\bar Y_{dk}=\bar Y_{+k},\quad k=1,\ldots,K,
+$$
+where $\bar Y_{+k}$ denotes the mean of post-stratum $k$, an
+estimator of $\bar Y_d$ can be obtained by replacing $\bar
+Y_{+k}=\bar Y_{dk}$ in (\ref{meandps}) by some direct estimate of
+$\bar Y_{+k}$, $k=1,\ldots,K$. Thus, we estimate the domain mean $\bar Y_d$
+using all the observations from the post-strata that cut across
+that domain. To estimate $\bar Y_{+k}$, we consider the ratio HT
+estimator, given by
+\begin{equation}\label{estmeanps}
+\hat{\bar Y}_{+k}=\frac{\hat Y_{+k}^{DIR}}{\hat N_{+k}^{DIR}},
+\end{equation}
+where $\hat Y_{+k}^{DIR}$ is the direct estimator of the total $Y_{+k}^{DIR}$ in
+post-stratum $k$ and $\hat N_{+k}^{DIR}$ is the direct estimator
+of the population count in the same post-stratum, $N_{+k}$,
+calculated using the sampling weights $w_{dj}$ (\verb"sweight") of
+the units in that post-stratum. Replacing (\ref{estmeanps}) for
+$\bar Y_{dk}$ in (\ref{meandps}), we obtain the post-stratified
+synthetic estimate returned by the function \verb"pssynt",
+$$
+\hat{\bar Y}_d^{SYN}=\frac{1}{N_d}\sum_{k=1}^K N_{dk}\hat{\bar
+Y}_{+k}.
+$$
+
+\section{Function ssd}
+
+The direct estimator of $\bar Y_d$ is inefficient for a domain $d$
+with a small sample size. On the other hand, the post-stratified
+synthetic estimator is biased when the means across domains within
+a post-stratum are not constant, which is likely to occur in practice. To
+balance the bias of a synthetic estimator and the instability of a
+direct estimator, \citet{Drew:82} proposed to take a weighted
+combination (or composition) of the two, with weight depending on
+the sample size of the domain. Thus, the function \verb"ssd"
+estimates the domain means $\bar Y_d$, $d=1,\ldots,D$ by a kind of
+composite estimators called sample-size dependent estimators. The
+call to this function is
+\begin{verbatim}
+ssd(dom, sweight, domsize, direct, synthetic, delta = 1, data)
+\end{verbatim}
+
+As mentioned above, the sample-size dependent estimator is
+obtained by composition of a direct estimator (\verb"direct") and
+a synthetic estimator (\verb"synthetic"), both specified by the
+user, that is,
+$$
+\hat{\bar Y}_d^C=\phi_d\hat{\bar{Y}}_d^{DIR}+(1-\phi_d)\hat{\bar
+Y}_d^{SYN}.
+$$
+The composition weight $\phi_d$ is obtained as
+$$
+\phi_d=\left\{\begin{array}{cc} 1,& \hat N_d^{DIR}\geq \delta N_d; \\
+\hat N_d^{DIR}/(\delta N_d),& \hat N_d^{DIR}< \delta
+N_d,\end{array}\right.
+$$
+for $N_d$ known (\verb"domsize") and for a given constant
+$\delta>0$ (\verb"delta"). Thus, for a domain with sample size
+large enough so that the estimated count $\hat N_d^{DIR}$ is
+greater than $\delta N_d$, the sample size dependent
+estimator becomes the direct estimator
+$\hat{\bar{Y}}_d^{DIR}$. Otherwise, it becomes the composition of the direct and the synthetic
+estimator $\hat{\bar Y}_d^{SYN}$. The constant $\delta$
+(\verb"delta") controls how much strength to borrow from other
+domains by attaching more or less weight to the synthetic
+estimator, with a large value of $\delta$ meaning to borrow more
+strength.
+
+%
+%
+%
+\section{Function eblupFH}
+%
+%
+%
+Fay-Herriot (FH) models were introduced by \citet{Fay:79} to
+obtain small area estimators of median income in small places in
+the U.S. These models are well known in the literature of small
+area estimation (SAE) and are the basic tool when only aggregated
+auxiliary data at the area level are available. The function
+\verb"eblupFH" estimates domain characteristics $\delta_d=h_d(\by_d)$,
+$d=1,\ldots,D$, based on the mentioned FH model, and the call to
+this function is
+\begin{verbatim}
+eblupFH(formula, vardir, method = "REML", MAXITER = 100,
+    PRECISION= 0.0001, data)
+\end{verbatim}
+The basic FH model is defined in two stages. First,
+since true values $\delta_d$ are not observable, our data will be the
+direct estimates $\hat\delta_d^{DIR}$ (left hand side of \verb"formula").
+These estimates have an error and this error might be different for each area because samples sizes in the areas are generally different.
+Thus, in the first stage, we assume the following model representing the error of direct estimates,
+\begin{equation}\label{FHm1}
+\hat\delta_d^{DIR}=\delta_d+e_d,\quad e_d\stackrel{ind}\sim  N(0, \psi_d),\quad d=1,\dots, D,
+\end{equation}
+ and referred to as sampling model, where $\psi_d$ is the sampling variance (\verb"vardir") of
+ direct estimator $\hat\delta_d^{DIR}$ given $\delta_d$, assumed to be known for all $d$.
+
+In a second stage, true values $\delta_d$ are assumed to be linearly related with a
+vector of auxiliary variables (right hand side of \verb"formula"),
+\begin{equation}\label{FHm2}
+\delta_d=\bx_d^\prime\bbe+v_d, \quad v_d \stackrel{iid}\sim
+N(0, A),\quad d=1,\dots, D,
+\end{equation}
+where $v_d$ is independent of $e_d$, $d=1,\ldots,D$.
+This is called the linking model because it links all the areas through the common model parameter $\bbe$.
+Replacing (\ref{FHm2}) in (\ref{FHm1}), we obtain
+ $$
+ \hat\delta_d^{DIR}=\bx_d^\prime\bbe+v_d+e_d,\quad v_d \stackrel{iid}\sim
+N(0, A),\quad e_d\stackrel{ind}\sim  N(0, \psi_d),\quad d=1,\dots, D,
+ $$
+ or equivalently,
+\begin{equation}
+\hat\delta_d^{DIR} \stackrel{ind}\sim N(\bx_d^\prime\bbe, \psi_d +
+A), \quad d=1,\dots,D. \label{eqn1p2}
+\end{equation}
+
+In matrix notation, (\ref{eqn1p2}) may be written as $\by \sim
+ N\{\bX\bbe,\bSi(A)\}$, where
+ $\by=(\hat\delta_1^{DIR},\dots, \hat\delta_D^{DIR})^\prime$, $\bX=(\bx_1,\dots,\bx_D)^\prime$ and $\bSi(A) = \mbox{diag}(A+\psi_1,\dots,
+ A+\psi_D)$. The best linear unbiased predictor (BLUP) of $\delta_d$ is given
+by
+\begin{eqnarray}
+\tilde\delta_d&=& \hat\delta_d^{DIR} - \frac{\psi_d}{A+\psi_d}\left\{\hat\delta_d^{DIR}-\bx_d^\prime\tilde\bbe(A)\right\}\nonumber\\
+&=& \{1- B_d(A)\}\hat\delta_d^{DIR}
++B_d(A)\,\bx_d^\prime\tilde\bbe (A), \label{eqn1p3}
+\end{eqnarray}
+where $B_d(A)=\psi_d/(A+\psi_d)$ and $\tilde\bbe(A)$ is the
+maximum likelihood (ML) estimator of $\bbe$ obtained from
+(\ref{eqn1p2}) and also the weighted least squares (WLS) estimator
+of $\bbe$ without normality assumption, given by
+\begin{eqnarray}
+\tilde\bbe(A)&=&\{\bX^\prime\bSi^{-1}(A)\bX\}^{-1}\bX^\prime\bSi^{-1}(A)\by\nonumber\\
+&=& \left\{\sum_{d=1}^D
+(A+\psi_d)^{-1}\bx_d\bx_d^\prime\right\}^{-1}\sum_{d=1}^D
+(A+\psi_d)^{-1}\bx_d\hat\delta_d^{DIR}. \label{eqn1p4}
+\end{eqnarray}
+
+Expression (\ref{eqn1p3}) shows that $\tilde\delta_d$ is obtained
+by composition of the direct estimator $\hat\delta_d^{DIR}$ and
+the regression synthetic estimator $\bx_d^\prime\tilde\bbe(A)$,
+with more weight attached to the direct estimator when $\psi_d$ is
+small relative to the total variance $A+\psi_d$, which means that
+the direct estimator is reliable, and more weight attached to the
+regression synthetic estimator $\bx_d^\prime\bbe$ when the direct
+estimator is not reliable enough and then more strength is
+required to borrow from the other domains.
+
+Since $A$ is unknown, in practice it is replaced by a consistent
+estimator $\hat{A}$. Several estimation methods (\verb"method")
+for $A$ are considered including a moment estimator called Fay-Herriot (FH) method, maximum likelihood (ML) and restricted (or residual) ML (REML),
+see the next subsections. Substituting the obtained estimator $\hat{A}$ for
+$A$ in the BLUP (\ref{eqn1p3}), we get the final empirical BLUP (EBLUP) returned by \verb"eblupFH", and given by
+\begin{equation}\label{eqntheb}
+\hat\delta_d=\tilde\delta_d(\hat A)=\{1-B_d(\hat
+A)\}\hat\delta_d^{DIR} + B_d(\hat A)\bx_d^\prime\hat{\bbe},
+\end{equation}
+where $\hat{\bbe}=\tilde\bbe(\hat A)$.
+
+Function \verb"eblupFH" delivers, together with the estimated model coefficients, i.e. the components of
+$\hat{\bbe}$, their asymptotic standard errors given by the diagonal elements of the
+Fisher information depending on the specified estimation method (\verb"method"), the $Z$ statistics obtained by
+dividing the estimates by their standard errors, and the p-values
+of the significance tests. Since for large $D$, the three possible estimators satisfy
+$$
+\hat\bbeta \sim N\left\{\bbeta,\cI^{-1}(\bbeta)\right\},
+$$
+where $\cI(\bbeta)$ is the Fisher information, then the $Z$
+statistic for a coefficient $\beta_j$ is
+$$
+Z_j=\hat\beta_j/\sqrt{v_{jj}},\quad j=1,\ldots,p,
+$$
+where $v_{jj}$ is the estimated asymptotic
+variance of $\hat\beta_j$, given by the $j$-th element in the
+diagonal of $\cI^{-1}(\hat\bbeta)$. Finally, for the test
+$$
+H_0:\beta_j=0 \quad \mbox{versus}\quad H_1:\beta_j\neq 0,
+$$
+p-values are obtained as
+$$
+\mbox{p-value}=2\,P(Z>|Z_j|),
+$$
+where $Z$ is a standard normal random variable.
+
+Three different goodness of fit measures are also delivered by
+function \verb"eblupFH". The first one is the estimated
+log-likelihood $\ell(\hat A,\hat\bbeta;\by)$, obtained by
+replacing the obtained estimates $\hat A$ and $\hat \bbeta$ in
+(\ref{likeFH}). The second criteria is the Akaike Information Criteria (AIC), given in this case by
+$$
+\mbox{AIC}=-2\,\ell(\hat A,\hat\bbeta;\by)+2(p+1).
+$$
+Finally, the Bayesian Information Criteria (BIC) is obtained as
+$$
+\mbox{BIC}=-2\,\ell(\hat A,\hat\bbeta;\by)+(p+1)\log(D).
+$$
+
+%
+%
+%
+\subsection{FH fitting method}\label{FittingFH}
+%
+%
+%
+FH method gives an estimator of $A$ based on a moments method
+originally proposed by \cite{Fay:79}. The FH estimator is given by
+$\hat{A}_{FH}=\max(0,A_{FH}^*)$ with $A_{FH}^*$ obtained
+iteratively as the solution of the following non-linear equation
+in $A$,
+\begin{equation}
+\sum_{d=1}^D
+(A+\psi_d)^{-1}\{\hat\delta_d^{DIR}-\bx_d^\prime\tilde\bbe(A)\}^2=
+D-p. \label{eqn2p2}
+\end{equation}
+This equation is solved using an iterative method such as the
+Fisher-scoring algorithm. For this, let us define
+$$
+S_{FH}(A)=\sum_{d=1}^D
+(A+\psi_d)^{-1}\{\hat\delta_d^{DIR}-\bx_d^\prime\tilde\bbe(A)\}^2-
+D-p.
+$$
+By a first order Taylor expansion of $S_{FH}(A_{FH})$ around the
+true $A$, we get
+\begin{equation}\label{TaylorAFH}
+0=S_{FH}(A_{FH})\approx S_{FH}(A)+\frac{\partial S_{FH}(A)}{\partial A}(A_{FH}^*-A).
+\end{equation}
+The Fisher-scoring algorithm replaces in this equation, the
+derivative $\partial S_{FH}(A)/\partial A$ by its expectation $E\{-\partial S_{FH}(A)/\partial A\}$, which in this
+case is equal to
+$$
+E\left\{-\frac{\partial S_{FH}(A)}{\partial A}\right\}=\sum_{d=1}^D(A+\psi_d)^{-1}.
+$$
+Then, solving for $A_{FH}$ in (\ref{TaylorAFH}), we get
+$$
+A_{FH}=A+\left[E\left\{-\frac{\partial S_{FH}(A)}{\partial A}\right\}\right]^{-1}S_{FH}(A).
+$$
+This algorithm is started taking $A=A_{FH}^{(0)}$,
+and then in each iteration it updates the estimate of $A$ with the
+updating equation
+$$
+A_{FH}^{(k+1)}=
+A_{FH}^{(k)}+\left[\left.E\left\{-\frac{\partial S_{FH}(A)}{\partial A}\right\}\right|_{A=
+A_{FH}^{(k)}}\right]^{-1}S_{FH}(A_{FH}^{(k)}).
+$$
+
+In the function \verb"eblupFH", the starting value is set to $A_{FH}^{(0)}=\mbox{median}(\psi_d)$. It stops either when the
+number of iterations $k>\mbox{MAXITER}$ where $\mbox{MAXITER}$ can
+be chosen by the user, or when
+$$
+\left|\frac{A_{FH}^{(k+1)}-A_{FH}^{(k)}}{A_{FH}^{(k)}}\right|<\mbox{PRECISION}.
+$$
+Convergence of the iteration is generally rapid.
+
+%
+%
+%
+\subsection{ML fitting method}\label{FittingFH}
+%
+%
+%
+
+The model parameters $A$ and $\bbeta$ can be estimated by ML or
+REML procedures based on the normal likelihood (\ref{eqn1p2}). In
+fact, under regularity conditions, the estimators derived from
+these two methods (and using the Normal likelihood) remain
+consistent at order $O_p(D^{-1/2})$ even without the Normality
+assumption, for details see \citet{Jiang:96}. ML estimators of $A$
+and $\bbeta$ are obtained by maximizing the log-likelihood, given
+by
+\begin{equation}\label{likeFH}
+\ell(A,\bbe;\by)=c-\frac{1}{2}\log|\bSi(A)|-\frac{1}{2}(\by-\bX\bbeta)^\prime\bSi^{-1}(A)(\by-\bX\bbe),
+\end{equation}
+where $c$ denotes a constant. Taking derivative of $\ell$ with
+respect to $\bbeta$ and equating to zero, we obtain the equation that gives the ML (or WLS) estimator
+(\ref{eqn1p4}). The ML equation for $A$ is
+obtained taking derivative of $\ell$ with respect to $A$ and
+equating to zero, and is given by
+\begin{equation}\label{eqn2p3}
+\sum_{d=1}^D
+(A+\psi_d)^{-2}\{\hat\delta_d^{DIR}-\bx_d^\prime\tilde\bbe(A)\}^2=
+\sum_{d=1}^D (A+\psi_d)^{-1}.
+\end{equation}
+Again, Fisher-scoring algorithm is used to solve this
+equation. The score is defined as $S_{ML}(A)=\partial \ell(A,\bbe;\by)/\partial A$ and is given by
+$$
+S_{ML}(A)=\sum_{d=1}^D
+(A+\psi_d)^{-2}\{\hat\delta_d^{DIR}-\bx_d^\prime\tilde\bbe(A)\}^2-\sum_{d=1}^D
+(A+\psi_d)^{-1}.
+$$
+The Fisher information for $A$ is obtained by taking expectation
+of the negative derivative of $S_{ML}(A)$, and is given by
+\begin{equation}\label{FIAML}
+\cI_{ML}(A)=E\left\{-\frac{\partial S_{ML}(A)}{\partial A}\right\}=\frac{1}{2}\sum_{d=1}^D(A+\psi_d)^{-2}.
+\end{equation}
+Finally, the updating equation for the ML estimator of $A$ is
+$$
+A_{ML}^{(k+1)}=A_{ML}^{(k)}+\left\{\cI_{ML}(
+A_{ML}^{(k)})\right\}^{-1}S_{ML}(A_{ML}^{(k)}).
+$$
+
+Starting value $A_{ML}^{(0)}$ and stopping criterion are the same as in
+the FH method described above. If $A_{ML}^*$ is the
+estimate obtained in the last iteration of the algorithm, then
+the final ML estimate returned by \verb"eblupFH" is $\hat A_{ML}=\max(0,A_{ML}^*)$.
+
+%
+%
+%
+\subsection{REML fitting method}\label{FittingREML}
+%
+%
+%
+
+The REML estimator of $A$ is obtained by maximizing the so called restricted likelihood, which is the joint
+p.d.f. of a vector of $D-p$ independent contrasts $\bF^\prime \by$ of the data $\by$,
+where $\bF$ is an $D\times (D-p)$ full column rank matrix satisfying $\bF'\bF=\bI_{D-p}$ and
+$\bF'\bX=\cero_{(D-p)\times p}$. The restricted likelihood of $\bF^\prime \by$ does not depend on $\bbeta$,
+and the log-restricted likelihood is
+$$
+\ell_R(A;\by)=c-\frac{1}{2}\log|\bF^\prime\bSi(A)\bF|-\frac{1}{2}\by^\prime\bF\left\{\bF^\prime\bSi(A)\bF\right\}^{-1}\bF^\prime\by.
+$$
+It holds that
+$$
+\bF\left\{\bF^\prime\bSi(A)\bF\right\}^{-1}\bF^\prime=\bP(A),
+$$
+where
+$$
+\bP(A)=\bSi^{-1}(A)-\bSi^{-1}(A)\bX\left\{\bX^\prime\bSi^{-1}(A)\bX\right\}^{-1}\bX^\prime\bSi^{-1}(A).
+$$
+Using this relation, we obtain
+$$
+\ell_R(A;\by)=c-\frac{1}{2}\log|\bF^\prime\bSi(A)\bF|-\frac{1}{2}\by^\prime\bP(A)\by.
+$$
+The score is defined as $S_R(A)=\partial \ell_R(A;\by)/\partial A$, and is given by
+\begin{eqnarray*}
+S_R(A) &=&
+-\frac{1}{2}\tr\{\bP(A)\}+\frac{1}{2}\by^\prime\bP^2(A)\by \\
+&=&
+-\sum_{d=1}^D(A+\psi_d)^{-1}-\tr\left[\left\{\bX^\prime\bSi^{-1}(A)\bX\right\}^{-1}\bX^\prime\bSi^{-2}(A)\bX\right]\\
+&&
++\frac{1}{2}\{\by-\bX\tilde{\bbe}(A)\}^\prime\bSi^{-2}(A)\{\by-\bX\tilde{\bbe}(A)\}\\
+&=& \sum_{d=1}^D (A+\psi_d)^{-1}- \sum_{d=1}^D
+\frac{\bx_d^\prime\left\{\sum_{k=1}^D
+(A+\psi_k)^{-1}\bx_k\bx_k^\prime\right\}^{-1}\bx_d}
+{(A+\psi_d)^{2}}\\
+&& -\sum_{d=1}^D
+\frac{\{\hat\delta_d^{DIR}-\bx_d^\prime\tilde\bbe(A)\}^2}{(A+\psi_d)^{2}}.
+\end{eqnarray*}
+The REML estimator of $A$ is obtained by solving the non-linear
+equation $S_{R}(A)=0$. Again, application of Fisher-scoring
+algorithm requires also the Fisher information for $A$ associated with $\ell_R(A;\by)$, which is
+given by
+\begin{eqnarray*}
+\cI_{R}(A) &=&
+E\left\{-\frac{\partial S_{R}(A)}{\partial A}\right\}=\frac{1}{2}\tr\{\bP^2(A)\}\\
+&=&
+\frac{1}{2}\tr\{\bSi(A)^{-2}\}-\tr\left[\{\bX^\prime\bSi^{-1}(A)\bX\}^{-1}\bX^\prime\bSi^{-3}(A)\bX\right]\\
+&&+\frac{1}{2}\tr\left(\left[\{\bX^\prime\bSi^{-1}(A)\bX\}^{-1}\bX^\prime\bSi^{-3}(A)\bX\right]^2\right).
+\end{eqnarray*}
+Finally, the updating equation is
+$$
+A_{REML}^{(k+1)}=A_{REML}^{(k)}+\left\{\cI_{R}(A_{REML}^{(k)})\right\}^{-1}S_R(A_{REML}^{(k)}).
+$$
+
+Starting value $A_{REML}^{(0)}$ and stopping criterion are the
+same as in FH and ML methods. Again, if $A_{REML}^*$ is
+the value obtained in the last iteration, then the REML estimate is
+finally $\hat A_{REML}=\max(0,A_{REML}^*)$.
+
+%
+%
+%
+\section{Function mseFH}\label{analMSEEB}
+%
+%
+%
+The accuracy of an EBLUP $\hat\delta_d$ is usually assessed by the estimated MSE. Function \verb"mseFH"
+accompanies the EBLUPs with their corresponding estimated MSEs. The call to this function is
+\begin{verbatim}
+mseFH(formula, vardir, method = "REML", MAXITER = 100,
+    PRECISION = 0.0001, data)
+\end{verbatim}
+where the arguments are exactly those of function \verb"eblupFH".
+
+Under model (\ref{FHm1})--(\ref{FHm2}), the MSE of the BLUP for $A$ known is
+given by
+$$
+\mbox{MSE}(\tilde\delta_d)= E(\tilde\delta_d-\delta_d)^2=
+g_{1d}(A)+g_{2d}(A),
+$$
+where
+\begin{eqnarray}
+g_{1d}(A)&=& \psi_d\,\{1-B_d(A)\},\label{g1i}\\
+g_{2d}(A)&=&
+\{B_d(A)\}^2\,\bx_d^\prime\left\{\sum_{d=1}^D(A+\psi_d)^{-1}\bx_d\bx_d^\prime\right\}^{-1}\bx_d,
+\label{eqn4p2}
+\end{eqnarray}
+ where $g_{1d}(A)$ is due to the prediction of the random effect $v_d$ and is
+ $O(1)$ for large $D$, and $g_{2d}(A)$ is due to the estimation of $\bbeta$ and is $O(D^{-1})$.
+ This means that, for large $D$, a large reduction in MSE over
+ $MSE(\hat\delta_d^{DIR})=\psi_d$ can be obtained when
+ $1-B_d(A)=A/(A+\psi_d)$ is small.
+
+ Under normality of random
+ effects and errors, the MSE of the EBLUP satisfies
+ \begin{equation}\label{analMSE}
+ \begin{array}{llll}
+ \mbox{MSE}(\hat\delta_d)  =  &\mbox{MSE}(\hat\delta_d)
+ &+& E(\hat\delta_d-\tilde\delta_d)^2 \\
+ \phantom{\mbox{MSE}(\hat\delta_d)} = &\left[g_{1d}(A)+g_{2d}(A)\right] &+& g_{3d}(A)+o(D^{-1}),
+ \end{array}
+ \end{equation}
+ where $g_{3d}(A)$ is the uncertainty arising from
+ the estimation of $A$, given by
+ \beq \label{eqn4p3}
+ g_{3d}(A)= \{B_d(A)\}^2(A+\psi_d)^{-1}{\bar V}(\hat A),
+ \eeq
+ where ${\bar V}(\hat A)$ is the asymptotic variance (as $D
+\rightarrow \infty)$ of the estimator $\hat A$ of $A$. Thus,
+$g_{3d}(A)$ depends on the choice of estimator $\hat A$ but for the three available fitting methods FH, ML and REML,
+this term is $O(D^{-1})$ \citep{Pras:90}.
+
+The MSE of the EBLUP depends on the true variance $A$, which is unknown.
+If we want to have an unbiased estimator of the MSE up to $o(D^{-1})$ terms (or second order unbiased),
+the MSE estimator depends on the method used to find $\hat A$ in the EBLUP (\verb"method").
+The following subsections describe the MSE estimates returned by \verb"mseFH" for each selected fitting method.
+
+ \subsection{FH fitting method}
+
+ When using the FH estimator ${\hat A}_{FH}$, a second order unbiased
+estimator of $\mbox{MSE}(\hat\delta_d)$ using ${\hat A}_{FH}$ is given by
+ \beq \label{eqn4p10}
+ mse_{FH}(\hat\delta_d)= g_{1d}({\hat A}_{FH})+g_{2d}({\hat A}_{FH})
+ +2\,g_{3d}({\hat A}_{FH})- b_{FH}({\hat A}_{FH})\{B_d({\hat A}_{FH})\}^2,
+ \eeq
+ where, in $g_{3d}({\hat A}_{FH})$, the asymptotic variance is
+ \beq \label{var-afh}
+ \bar{V}(\hat{A}_{FH})=\frac{2D}{\left\{\sum_{d=1}^D(A+\psi_d)^{-1}\right\}^2}
+ \eeq
+ and
+ \beq \label{eqn4p8}
+ b_{FH}(A) = \frac{
+ 2\left[D\,\sum_{d=1}^D(A+\psi_d)^{-2} -
+ \left\{\sum_{d=1}^D(A+\psi_d)^{-1}\right\}^2\right]}{{\left\{\sum_{d=1}^D(A+\psi_d)^{-1}\right\}}^3},
+ \eeq
+ see \citet{Dat:05}.
+
+ \subsection{ML fitting method}
+
+ When using the ML estimator $\hat{A}_{ML}$ of $A$, a
+ second order unbiased estimator of $\mbox{MSE}(\hat\delta_d)$ was obtained by \citet{Dat:00}
+ and is given by
+ \beq
+ mse_{ML}(\hat\delta_d)=
+ g_{1d}(\hat{A}_{ML})+g_{2d}(\hat{A}_{ML})+2g_{3d}(\hat{A}_{ML})-b_{ML}(\hat{A}_{ML})\bigtriangledown g_{1d}(\hat{A}_{ML}),
+ \label{mseML}
+ \eeq
+ where the asymptotic variance involved in $g_{3d}(A)$ is equal to the inverse
+ of the Fisher information given in (\ref{FIAML}),
+ \beq
+ {\bar V}(\hat{A}_{ML})=\cI_{ML}^{-1}(A)=\frac
+{2}{\sum_{d=1}^D(A+\psi_d)^{-2}}, \label{eqn4p7}
+ \eeq
+ $$
+ b_{ML}(A)=-\frac{\mbox{trace}\left[\left\{\sum_{\ell=1}^D
+(A +\psi_{\ell})^{-1} \bx_{\ell}\bx_{\ell}'\right\}^{-1}\left\{\sum_{\ell=1}^D
+(A +\psi_{\ell})^{-2} \bx_{\ell}\bx_{\ell}'\right\}\right]}{\sum_{\ell=1}^D
+(A +\psi_{\ell})^{-2}}
+ $$
+ and
+ $$
+ \bigtriangledown g_{1d}(A)=\frac{\partial g_{1d}(A)}{\partial A}=\left\{\frac{\psi_d}{A+\psi_d}\right\}^2.
+ $$
+
+
+ \subsection{REML fitting method}
+
+ When using the REML estimator $\hat{A}_{REML}$, a second order unbiased estimator of
+$\mbox{MSE}(\hat\delta_d)$ is given by
+ \beq\label{eqn4p5}
+ mse_{REML}(\hat\delta_d)=
+ g_{1d}(\hat{A}_{REML})+g_{2d}(\hat{A}_{REML})+2g_{3d}(\hat{A}_{REML}),
+ \eeq
+ where ${\bar V}(\hat{A}_{REML})={\bar V}(\hat{A}_{ML})$ is given in (\ref{eqn4p7}), see \citet{Dat:00}.
+ %
+ %
+ \section{Function eblupSFH}\label{eblupSFH}
+ %
+ %
+ %
+ Function \verb"eblupSFH" estimates domain parameters $\delta_d=h_d(\by_d)$, $d=1,\ldots,D$, based on a FH model with
+ spatially correlated area effects. The call to the function is
+ \begin{verbatim}
+ eblupSFH(formula, vardir, proxmat, method = "REML", MAXITER = 100,
+         PRECISION = 0.0001, data)
+ \end{verbatim}
+ \vspace{-0.5 cm}
+ The model considered by this function is, in matrix notation,
+ \beq\label{SFHm}
+ \by=\bX\bbeta+\bv+\be,
+ \eeq
+ where $\by=(\hat\delta_1^{DIR},\ldots,\hat\delta_D^{DIR})'$ is the vector
+ of direct estimates for the $D$ small areas (left hand side of \verb"formula"),
+ $\bX=(\bx_1,\ldots,\bx_D)'$ is a $D\times p$ matrix containing in its columns the values of
+ $p$ explanatory variables for the $D$ areas (right hand side of \verb"formula"), $\bv=(v_1,\ldots,v_D)'$
+ is the vector of area effects and $\be=(e_1,\ldots,e_D)'$
+ is the vector of independent sampling errors, independent of $\bv$,
+ with $\be\sim N(\cero_D,\bPsi)$, where the covariance matrix
+ $\bPsi=\diag(\psi_1,\ldots,\psi_D)$ is known (\verb"vardir" contains the diagonal elements). The vector
+ $\bdelta=\bX\bbeta+\bv=(\delta_1,\ldots,\delta_D)'$ collects the target domain parameters.
+
+ The vector $\bv$ follows an simultaneously autoregressive (SAR) process with unknown
+ autoregression parameter $\rho\in (-1,1)$ and proximity
+ matrix $\bW$, i.e.,
+ \beq\label{eq:spat}
+ \bv=\rho \mathbf{Wv}+\bu,
+ \eeq
+ see \cite{ans:88} and \cite{cressie:93}. Model (\ref{SFHm})--(\ref{eq:spat}) will be called hereafter spatial FH (SFH) model.
+ We assume that the matrix $(\bI_D-\rho \mathbf{W})$ is
+ non-singular, where $\bI_D$ denotes the $D\times D$ identity matrix. Then $\bv$ can be expressed as
+ \beq\label{SAR}
+ \bv=(\bI_D-\rho \mathbf{W})^{-1}\bu,
+ \eeq
+ where $\bu=(u_1,\ldots,u_D)'$ satisfies $\bu\sim N(\cero_D,A\,\bI_D)$ for $A$ unknown.
+
+The matrix $\bW$ (\verb"proxmat") is obtained from an original proximity matrix $\bW^0$,
+whose diagonal elements area equal to zero and the remaining
+entries are equal to 1 when the two areas corresponding to the row
+and the column indices are considered as neighbor and zero
+otherwise. Then $\bW$ is obtained by row-standardization of $\bW^0$, obtained by dividing each
+entry of $\bW^0$ by the sum of elements in the same row, see
+\cite{ans:88}, \cite{cressie:93} and \cite{ban:04} for more details on the SAR(1)
+process with the above parametrization. When $\bW$ is defined in this fashion,
+$\rho$ is called spatial autocorrelation parameter \citep{ban:04}. Hereafter,
+ the vector of variance components will be denoted $\btheta=(\theta_1,\theta_2)'=(A,\rho)'$.
+ Equation (\ref{SAR}) implies that $\bv$ has mean vector $\mathbf{0}$ and
+ covariance matrix equal to
+ \beq\label{sarmatrix}
+ \mathbf{G}(\btheta)=A\,\left\{(\bI_D-\rho
+ \mathbf{W})'(\bI_D-\rho \mathbf{W})\right\}^{-1}.
+ \eeq
+ Since $\mathbf{e}$ is independent of $\bv$, the covariance matrix of $\by$ is equal to
+ $$
+ \bSigma(\btheta)=\bG(\btheta)+\bPsi.
+ $$
+
+ Combining
+ (\ref{SFHm}) and (\ref{SAR}), the model is
+ \beq\label{mixed:spatial}
+ \by=\mathbf{X}\bbeta+ (\bI_D-\rho
+ \mathbf{W})^{-1} \bu+\mathbf{e}
+ \eeq
+ The BLUP of $\delta_d=\bx_d'\bbeta+v_d$ under model (\ref{mixed:spatial}) is called Spatial BLUP \citep{pet:06} and
+ is given by
+ \beq\label{sblup}
+ \tilde\delta_d(\btheta)=\mathbf{x}_d'
+ \tilde{\bbeta}(\btheta)+\mathbf{b}_d'\mathbf{G}(\btheta)\bSigma^{-1}(\btheta)\{\by-\bX
+ \tilde{\bbeta}(\btheta)\},
+ \eeq
+where
+$\tilde{\bbeta}(\btheta)=\{\bX'\bSigma^{-1}(\btheta)\bX\}^{-1}\bX'\bSigma^{-1}(\btheta)\by$
+is the WLS estimator of $\bbeta$ and $\mathbf{b}_d'$ is the $1\times d$ vector
+$(0,\ldots,0,1,0,\ldots,0)$ with 1 in the $d$-th position. The
+Spatial BLUPs $\tilde\delta_d(\btheta)$, $d=1,\ldots,D$, depend on the unknown
+vector of variance components $\btheta=(A,\rho)'$. Replacing
+a consistent estimator $\hat\btheta=(\hat A,\hat\rho)'$ for $\btheta$ in (\ref{sblup}), we obtain the
+Spatial EBLUPs $\hat\delta_d=\tilde\delta_d(\hat\btheta)$, $d=1,\ldots,D$, returned by function \verb"eblupSFH".
+The following subsections describe the two fitting methods (\verb"method")
+for the SFH model (\ref{SFHm})--(\ref{eq:spat}) supported by \verb"eblupSFH".
+%
+%
+%
+\subsection{ML fitting method}
+%
+%
+%
+ The ML estimator of $\btheta=(A,\rho)'$
+ is obtained by maximizing the log-likelihood of $\btheta$ given the data
+ vector $\by$,
+ $$
+ \ell(\btheta;\by)=c-\frac{1}{2}\,\log|\bSigma(\btheta)|-\frac{1}{2}\,(\by-\bX\bbeta)'\bSigma^{-1}(\btheta)(\by-\bX\bbeta),
+ $$
+ where $c$ denotes a constant. The Fisher-scoring iterative algorithm
+ is applied to maximize this log-likelihood. Let
+ $\bS(\btheta)=(S_{A}(\btheta),S_{\rho}(\btheta))'$ be the scores or derivatives of the
+ log-likelihood with respect to $A$ and $\rho$, and let
+ $\cI(\btheta)$ be the Fisher information matrix obtained from $\ell(\btheta;\by)$, with
+ elements
+ \begin{equation}\label{FISFH}
+ \cI(\btheta)=\left(\begin{array}{cc}
+ \cI_{A,A}(\btheta) &  \cI_{A,\rho}(\btheta) \\
+ \cI_{\rho,A}(\btheta) &  \cI_{\rho,\rho}(\btheta) \\
+ \end{array}\right).
+ \end{equation}
+ The Fisher-scoring algorithm starts with an initial estimate
+ $\btheta^{(0)}=(\sigma_u^{2(0)},\rho^{(0)})'$ and then at each
+ iteration $k$, this estimate is updated with the equation
+ $$
+ \btheta^{(k+1)}=\btheta^{(k)}+\cI^{-1}(\btheta^{(k)})\bS(\btheta^{(k)}).
+ $$
+
+ The ML equation for $\bbeta$ yields
+ \begin{equation}\label{hatbeta}
+ \tilde{\bbeta}(\btheta)=\left\{\bX'\bSigma^{-1}(\btheta)\bX\right\}^{-1}\bX'\bSigma^{-1}(\btheta)\by.
+ \end{equation}
+ Let us denote
+ $$
+ \bC(\rho)=(\bI_D-\rho \mathbf{W})'(\bI_D-\rho
+ \mathbf{W})
+ $$
+ and
+ \begin{equation}\label{Ptheta}
+ \bP(\btheta)=\bSigma^{-1}(\btheta)-\bSigma^{-1}(\btheta)\bX\left\{\bX'\bSigma^{-1}(\btheta)\bX\right\}^{-1}\bX'\bSigma^{-1}(\btheta).
+ \end{equation}
+ Then the derivative of $\bC(\rho)$ with respect to $\rho$ is
+ $$
+ \frac{\partial
+ \bC(\rho)}{\partial\rho}
+ =-\bW-\bW'+2\rho\bW'\bW
+ $$
+ and the derivatives of $\bSigma(\btheta)$ with respect to
+ $A$ and $\rho$ are respectively given by
+ $$
+ \frac{\partial \bSigma(\btheta)}{\partial A}=\bC^{-1}(\rho),
+ \quad \frac{\partial \bSigma(\btheta)}{\partial
+ \rho}=-A\,\bC^{-1}(\rho)\frac{\partial
+ \bC(\rho)}{\partial\rho}\bC^{-1}(\rho)\triangleq\bR(\btheta).
+ $$
+ The scores associated to $A$ and $\rho$, after replacing
+ (\ref{hatbeta}), are given by
+ \begin{eqnarray*}
+ S_{A}(\btheta) &=& -\frac{1}{2}\,\tr\left\{\bSigma^{-1}(\btheta)\bC^{-1}(\rho)\right\}+\frac{1}{2}\,\by'
+ \bP(\btheta)\bC^{-1}(\rho)\bP(\btheta)\by,\\
+ S_{\rho}(\btheta) &=& -\frac{1}{2}\,\tr\left\{\bSigma^{-1}(\btheta)\bR^{-1}(\btheta)\right\}+\frac{1}{2}\,\by'
+ \bP(\btheta)\bR(\btheta)\bP(\btheta)\by.
+ \end{eqnarray*}
+ The elements of the Fisher information matrix are
+ \begin{eqnarray}
+ && \cI_{A,A}(\btheta)=\frac{1}{2}\,\tr\left\{\bSigma^{-1}(\btheta)\bC^{-1}(\rho)\bSigma^{-1}(\btheta)\bC^{-1}(\rho)\right\},
+ \label{FISFH11}\\
+ &&
+ \cI_{A,\rho}(\btheta)=\cI_{\rho,A}=\frac{1}{2}\,\tr\left\{\bSigma^{-1}(\btheta)\bR(\btheta)\bSigma^{-1}(\btheta)\bC^{-1}(\rho)\right\},\label{FISFH12}\\
+ &&
+ \cI_{\rho,\rho}(\btheta)=\frac{1}{2}\,\tr\left\{\bSigma^{-1}(\btheta)\bR(\btheta)\bSigma^{-1}(\btheta)\bR(\btheta)\right\}.\label{FISFH22}
+ \end{eqnarray}
+ In the function \verb"eblupSFH", the starting value of $A$
+ is set to $A^{(0)}=\mbox{median}(\psi_d)$. For $\rho$, we
+ take $\rho^{(0)}=0.5$. The algorithm stops either when the number of iterations $k>\mbox{MAXITER}$
+ where $\mbox{MAXITER}$ can be chosen by the user,
+ or when
+ $$
+ \max\left\{\left|\frac{\sigma_u^{2(k+1)}-\sigma_u^{2(k)}}{\sigma_u^{2(k)}}\right|,
+ \left|\frac{\rho^{(k+1)}-\rho^{(k)}}{\rho^{(k)}}\right|\right\}<\mbox{PRECISION}.
+ $$
+
+ \subsection{REML fitting method}
+
+ The REML estimator of $\btheta$ is obtained by maximizing the
+ restricted likelihood defined as in Section \ref{FittingREML}. Under the SFH model,
+ the restricted log-likelihood is given by
+ $$
+ \ell_R(\btheta;\by)=c-\frac{1}{2}\,\log|\bF'\bSigma(\btheta)\bF|-\frac{1}{2}\,\by'\bP(\btheta)\by,
+ $$
+ where $\bP(\btheta)$ is defined in (\ref{Ptheta}).
+ Using the following properties of the matrix $\bP(\btheta)$,
+ $$
+ \bP(\btheta)\bSigma(\btheta)\bP(\btheta)=\bP(\btheta),\quad \frac{\partial\bP(\btheta)}{\partial
+ \theta_r}=-\bP(\btheta)\frac{\partial\bSigma(\btheta)}{\partial\theta_r}\bP(\btheta),
+ $$
+ we obtain the scores or derivatives of $\ell_R(\btheta;\by)$ with respect to each element of $\btheta$,
+ \begin{eqnarray*}
+ &&
+ S_{A}^R(\btheta)=-\frac{1}{2}\,\tr\left\{\bP(\btheta)\bC^{-1}(\rho)\right\}+\frac{1}{2}\,\by'\bP(\btheta)\bC^{-1}(\rho)\bP(\btheta)\by,\\
+ &&
+ S_{\rho}^R(\btheta)=-\frac{1}{2}\,\tr\left\{\bP(\btheta)\bR(\btheta)\right\}+\frac{1}{2}\,\by'\bP(\btheta)\bR(\btheta)\bP(\btheta)\by,
+ \end{eqnarray*}
+ Finally, the elements of the Fisher information obtained from
+ $\ell_R(\btheta;\by)$ are
+ \begin{eqnarray*}
+ &&
+ \cI_{A,A}^R(\btheta)=\frac{1}{2}\,\mbox{tr}\{\bP(\btheta)\bC^{-1}(\rho)\bP(\btheta)\bC^{-1}(\rho)\},\\
+ &&
+ \cI_{A,\rho}^R(\btheta)=\cI_{\rho,A}^R=\frac{1}{2}\,\mbox{tr}\{\bP(\btheta)\bR(\btheta)\bP(\btheta)\bC^{-1}(\rho)\},\\
+ && \cI_{\rho,\rho}^R(\btheta)=\frac{1}{2}\,\mbox{tr}\{\bP(\btheta)\bR(\btheta)\bP(\btheta)\bR(\btheta)\}.
+ \end{eqnarray*}
+ The updating equation of the Fisher-scoring algorithm is then
+ $$
+ \btheta^{(k+1)}=\btheta^{(k)}+\left\{\cI^R(\btheta^{(k)})\right\}^{-1}\bS^R(\btheta^{(k)}),
+ $$
+ where
+ $\bS^R(\btheta)=(S_{A}^R(\btheta),S_{\rho}^R(\btheta))'$ is the scores vector and
+ \begin{equation}\label{FISREML}
+ \cI^R(\btheta)=\left(\begin{array}{cc}
+ \cI_{A,A}^R(\btheta) &  \cI_{A,\rho}^R(\btheta) \\
+ \cI_{\rho,A}^R(\btheta) &  \cI_{\rho,\rho}^R(\btheta) \\
+ \end{array}\right).
+ \end{equation}
+ is the Fisher information matrix. Starting values and stopping criterion are set the same as in the
+ case of ML estimates.
+
+%
+%
+%
+\section{Function mseSFH}
+%
+%
+%
+ Function \verb"mseSFH" gives estimated MSEs of the Spatial EBLUPs under the SFH model (\ref{SFHm})--(\ref{eq:spat}).
+ The call to the function is
+ \begin{verbatim}
+ mseSFH(formula, vardir, proxmat, method = "REML", MAXITER = 100,
+       PRECISION = 0.0001, data)
+ \end{verbatim}
+ \vspace{-0.5 cm}
+ which has the same arguments as function \verb"eblupSFH".
+
+ Similarly as in Section \ref{analMSEEB}, under normality of random effects and errors, the
+ MSE of the Spatial EBLUP can be decomposed as
+ \begin{equation}\label{MSE}
+ \begin{array}{llll}
+ \mbox{MSE}\{\tilde\delta_d(\hat\btheta)\} = & \mbox{MSE}\{\tilde\delta_d(\btheta)\}
+ &+&
+ E\{\tilde\delta_d(\hat\btheta)-\tilde\delta_d(\btheta)\}^2\\
+ \phantom{\mbox{MSE}\{\tilde\delta_d(\hat\btheta)\}} =& \left[g_{1d}(\btheta)+g_{2d}(\btheta)\right] &+& g_{3d}(\btheta),
+ \end{array}
+ \end{equation}
+ where the first two terms on the right hand side are easily calculated
+ due to the linearity of the Spatial BLUP $\tilde\delta_d(\btheta)$ in the data vector $\by$. They are given by
+ \begin{eqnarray}
+ g_{1d}(\btheta) &=& \bb_d' \left\{\bG(\btheta)-\bG(\btheta)\bSigma^{-1}(\btheta)\bG(\btheta)\right\}\bb_d,\label{g1dSFH} \\
+ g_{2d}(\btheta) &=& \bb_d'\left\{\bI_D-\bG(\btheta)\bSigma^{-1}(\btheta)\right\}\bX
+ (\bX'\bSigma^{-1}(\btheta)\bX)^{-1}
+ \bX'\nonumber\\
+ && \times \left\{\bI_D-\bSigma^{-1}(\btheta)\bG(\btheta)\right\}\bb_d. \label{g2dSFH}
+ \end{eqnarray}
+ However, for the last term $g_{3d}(\btheta)=E\{\tilde\delta_d(\hat\btheta)-\tilde\delta_d(\btheta)\}^2$,
+ an exact analytical expression does not exist due to the
+ non-linearity of the EBLUP $\tilde\delta_d(\hat\btheta)$ in $\by$.
+ Under the basic FH model (\ref{FHm1})-(\ref{FHm2}) with independent random effects $v_d$ (diagonal covariance matrix
+ $\bSigma$), \cite{Pras:90} obtained an approximation up to $o(D^{-1})$ terms of
+ $g_{3d}(\btheta)$ through Taylor linearization, see Section \ref{analMSEEB}. Their formula can
+ be taken as a naive approximation of the true $g_{3d}(\btheta)$
+ under the SFH model (\ref{SFHm})--(\ref{eq:spat}). Straightforward application of this
+ formula to model (\ref{SFHm})--(\ref{eq:spat}) yields
+ \begin{equation}\label{g3dSFH}
+ g_{3d}^{PR}(\btheta) = \mbox{trace}\left\{\bL_d(\btheta)\bSigma(\btheta) \bL_d'(\btheta)
+ \mathcal{I}^{-1}(\btheta)\right\},
+ \end{equation}
+ where $\mathcal{I}(\btheta)$ is the Fisher information defined in (\ref{FISFH}) with elements (\ref{FISFH11})--(\ref{FISFH22}) and
+ $$
+ \bL_d(\btheta)=\left(\begin{array}{c}
+ \bb_d'\left\{\bC^{-1}(\rho)\bSigma^{-1}(\btheta)-A\bC^{-1}(\rho)\bSigma^{-1}(\btheta)\bC^{-1}(\rho)\bSigma^{-1}(\btheta)\right\} \\
+ \bb_d'\left\{\bR(\btheta)\bSigma^{-1}(\btheta)-A\bC^{-1}(\rho)\bSigma^{-1}(\btheta)\bR(\btheta)\bSigma^{-1}(\btheta)\right\}
+ \end{array}\right).
+ $$
+ Then the full MSE can be approximated by
+ \begin{equation}\label{MSE:app}
+ \mbox{MSE}^{PR}\{\tilde\delta_d(\hat\btheta)\}=
+ g_{1d}(\btheta)+g_{2d}(\btheta)+g_{3d}^{PR}(\btheta).
+ \end{equation}
+ \cite{sin:05} arrived to the same formula (\ref{MSE:app})
+ for the true MSE under a SFH model. However, this formula is not accounting for the extra
+ uncertainty due to estimation of the spatial autocorrelation parameter $\rho$.
+ Next subsections describe the MSE estimates returned by function \verb"mseSFH", depending on
+ the specified fitting method.
+
+ \subsection{REML fitting method}
+
+ Let $\hat\btheta_{REML}$ be the estimator of $\hat\btheta$ when REML fitting method is specified in \verb"mseSFH".
+ In that case, the function \verb"mseSFH" returns the MSE estimator derived by
+ \cite{sin:05} and given by
+ \begin{equation}\label{SSKREML}
+ \mbox{mse}^{SSK}[\tilde\delta_d(\hat\btheta_{REML})]=
+ g_{1d}(\hat\btheta_{REML}) +g_{2d}(\hat\btheta_{REML})+2g_{3d}^{PR}(\hat\btheta_{REML})-g_{4d}(\hat\btheta_{REML}),
+ \end{equation}
+ where $g_{1d}$, $g_{2d}$ and $g_{3d}^{PR}$ are given respectively in (\ref{g1dSFH}), (\ref{g2dSFH}) and (\ref{g3dSFH}), and
+ $g_{4d}(\btheta)$ reads
+ $$
+ g_{4d}(\btheta)=\frac{1}{2}\,\sum_{r=1}^2\sum_{s=1}^2\bb_d'\bPsi\,\bSigma^{-1}(\btheta)\frac{\partial^2
+ \bSigma(\btheta)}{\partial\theta_r\partial\theta_s}\bSigma^{-1}(\btheta)\bPsi\,
+ v_{rs}(\btheta)\,\bb_d,
+ $$
+ where $v_{rs}(\btheta)$ denotes the element $(r,s)$ of $\cI(\btheta)^{-1}$, for the
+ Fisher information matrix $\cI(\btheta)$ defined in (\ref{FISFH}) with elements (\ref{FISFH11})--(\ref{FISFH22}).
+ The second order derivatives of $\bSigma(\btheta)$ are given by
+ \begin{eqnarray*}
+ && \frac{\partial^2 \bSigma(\btheta)}{\partial A^2}=\cero_{D\times
+ D},\\
+ && \frac{\partial^2 \bSigma(\btheta)}{\partial A\partial\rho}=\frac{\partial^2 \bSigma(\btheta)}{\partial A\partial\rho}
+ =-\bC^{-1}(\btheta)\frac{\partial
+ \bC(\rho)}{\partial\rho}\bC^{-1}(\btheta),\\
+ && \frac{\partial^2 \bSigma(\btheta)}{\partial \partial\rho^2}=2A\bC^{-1}(\btheta)\frac{\partial
+ \bC(\rho)}{\partial\rho}\bC^{-1}(\btheta)\frac{\partial
+ \bC(\rho)}{\partial\rho}\bC^{-1}(\btheta)-2A\bC^{-1}(\btheta)\bW'\bW\bC^{-1}(\btheta).
+ \end{eqnarray*}
+
+ \subsection{ML fitting method}
+
+ Let $\hat\btheta_{ML}$ be the estimator of $\hat\btheta$ when ML fitting method is specified. In that case,
+ the estimate returned by \verb"mseSFH" reads
+ \begin{eqnarray*}
+ \mbox{mse}_{ML}^{SSK}\{\tilde\delta_d(\hat\btheta)\} &= &
+ g_{1d}(\hat\btheta_{ML})+g_{2d}(\hat\btheta_{ML})+2
+ g_{3d}^{PR}(\hat\btheta_{ML})-g_{4d}(\hat\btheta_{ML})\nonumber\\
+ &&-\mathbf{b}_{ML}'(\hat\btheta_{ML})\nabla
+ g_{1d}(\hat\btheta_{ML}).\label{mse:ml}
+ \end{eqnarray*}
+ In this expression, $g_{1d}$, $g_{2d}$ and $g_{3d}^{PR}$ are defined respectively in (\ref{g1dSFH}), (\ref{g2dSFH}) and (\ref{g3dSFH}),
+ $\nabla g_{1d}(\btheta)=(\partial g_{1d}(\btheta)/\partial A,\partial g_{1d}(\btheta)/\partial \rho)'$
+ is the gradient of $g_{1d}(\btheta)$ with derivatives
+ \begin{eqnarray*}
+ \frac{\partial g_{1d}(\btheta)}{\partial A} &=& \bb_d'\left\{\bC^{-1}(\rho)-2\,A\,\bC^{-1}(\rho)\bSigma^{-1}(\btheta)\bC^{-1}(\rho)\right.\\
+ && \quad +  \left.A^2\bC^{-1}(\rho)\bSigma^{-1}(\btheta)\bC^{-1}(\rho)\bSigma^{-1}(\btheta)\bC^{-1}(\rho)\right\}\bb_d,\\
+ \frac{\partial g_{1d}(\btheta)}{\partial \rho} &=& \bb_d'\left\{\bR(\btheta)-2\,A\,\bC^{-1}(\rho)\bSigma^{-1}(\btheta)\bR(\btheta)\right.\\
+ && \quad \left. A^2\bC^{-1}(\rho)\bSigma^{-1}(\btheta)\bR(\btheta)\bSigma^{-1}(\btheta)\bC^{-1}(\rho)\right\}\bb_d,
+ \end{eqnarray*}
+ and finally,
+ $\mathbf{b}_{ML}(\hat\btheta_{ML})$ is the bias of the ML estimator $\hat\btheta_{ML}$
+ up to $o(D^{-1})$ terms, given by $\mathbf{b}_{ML}(\hat\btheta)=\cI^{-1}(\hat\btheta_{ML})
+ \bh(\hat\btheta_{ML})/2$ with $\bh(\hat\btheta_{ML})=(h_1(\hat\btheta_{ML}),h_2(\hat\btheta_{ML}))'$ and
+ \begin{eqnarray*}
+ && h_1(\btheta)=-\mbox{trace}\left[\left\{\bX'\bSigma^{-1}(\btheta)\bX\right\}^{-1}
+ \bX'\bSigma^{-1}(\btheta)\bC^{-1}(\rho)\bSigma^{-1}(\btheta)\bX\right],\\
+ && h_2(\btheta)=-\mbox{trace}\left[\left\{\bX'\bSigma^{-1}(\btheta)\bX\right\}^{-1}
+ \bX'\bSigma^{-1}(\btheta)\bR(\btheta)\bSigma^{-1}(\btheta)\bX\right].
+\end{eqnarray*}
+
+%
+%
+%
+\section{Function pbmseSFH}\label{pbmseSpatFH}
+%
+%
+%
+ Function \verb"pbmseSFH" gives parametric bootstrap estimates of the MSEs of the Spatial EBLUPs
+ under the SFH model (\ref{SFHm})--(\ref{eq:spat}) using an extension of \cite{Gon:08b}.
+ The MSE estimators obtained by this procedure are expected to be consistent if the model parameter
+estimates are consistent. The call to the function is
+\begin{verbatim}
+pbmseSFH(formula, vardir, proxmat, B = 100, method = "REML",
+    MAXITER = 100, PRECISION = 0.0001, data)
+\end{verbatim}
+where the arguments are those of function \verb"eblupSFH", and additionally the number of bootstrap replicates \verb"B".
+The bootstrap procedure proceeds as follows:
+ \begin{itemize}
+ \item[1)] Fit the SFH model (\ref{SFHm})--(\ref{eq:spat}) to the initial data
+ $\by=(\hat\delta_1^{DIR},\ldots,\hat\delta_D^{DIR})'$, obtaining model parameter estimates $\hat\btheta=(\hat A,\hat\rho)'$
+ and $\hat\bbeta=\tilde\bbeta(\hat\btheta)$.
+ \item[2)] Generate a vector $\bt_1^*$ whose elements are $D$ independent copies of a
+ $N(0,1)$. Construct bootstrap vectors $\bu^*=\hat A^{1/2}\, \bt_1^*$ and $\bv^*=(\bI_D-\hat\rho\bW)^{-1}\bu^*$, and calculate the bootstrap
+ quantity of interest $\bdelta^*=\bX\hat\bbeta+\bv^*$, by regarding $\hat\bbeta$ and $\hat\btheta$ as
+ the true values of the model parameters.
+ \item[3)] Generate a vector $\bt_2^*$ with $D$ independent
+ copies of a $N(0,1)$, independently of the generation of
+ $\bt_1^*$, and construct the vector of bootstrap random errors $\be^*=\bPsi^{1/2}\,\bt_2^*$.
+ \item[4)] Obtain bootstrap data applying the model
+ $\by^*=\bdelta^*+\be^*=\bX\hat\bbeta+\bv^*+\be^*$.
+ \item[5)] Regarding $\hat\bbeta$ and $\hat\btheta$ as
+ the true values of $\bbeta$ and $\btheta$, fit the SFH model (\ref{SFHm})--(\ref{eq:spat}) to bootstrap data $\by^*$, obtaining
+ estimates of the ``true'' $\hat\bbeta$ and $\hat\btheta$ based on $\by^*$.
+ For this, first calculate the estimator of $\hat\bbeta$ evaluated at the ``true'' value
+ $\hat\btheta$,
+ $$
+ \tilde\bbeta^*(\hat\btheta)=\left\{\bX'\bSigma^{-1}(\hat\btheta)\bX\right\}^{-1}\bX'\bSigma^{-1}(\hat\btheta)\by^*;
+ $$
+ next, obtain the estimator $\hat\btheta^*$ of $\hat\btheta$ based on $\by^*$ and, finally, the estimator
+ of $\hat\bbeta$ evaluated at $\hat\btheta^*$, that is,
+ $\tilde\bbeta^*(\hat\btheta^*)$.
+ \item[6)] Calculate the bootstrap Spatial BLUP from bootstrap data $\by^*$ and
+ regarding $\hat\btheta$ as the true value of $\btheta$,
+ $$
+ \tilde\delta_d^*(\hat\btheta)=\bx_d'\tilde\bbeta^*(\hat\btheta)
+ +\bb_d'\bG(\hat\btheta)\bSigma(\hat\btheta)^{-1}
+ \left\{\by^*-\bX\tilde\bbeta^*(\hat\btheta)\right\}.
+ $$
+ Calculate also the bootstrap Spatial EBLUP replacing $\hat\btheta^*$
+ for the ``true'' $\hat \btheta$,
+ $$
+ \tilde\delta_d^*(\hat\btheta^*)=\bx_d'\tilde\bbeta^*(\hat\btheta^*)
+ +\bb_d'\bG(\hat\btheta^*)\bSigma^{-1}(\hat\btheta^*)
+ [\by^*-\bX\tilde\bbeta^*(\hat\btheta^*)].
+ $$
+ \item[7)] Repeat steps 2)--6) $B$ times. In $b$-th bootstrap replication,
+ let $\delta_d^{*(b)}$ be the quantity of interest for $d$-th area, $\hat\btheta^{*(b)}$
+ the bootstrap estimate of $\btheta$, $\tilde\delta_d^{*(b)}(\hat\btheta)$ the bootstrap
+ Spatial BLUP and $\tilde\delta_d^{*(b)}(\hat\btheta^{*(b)})$ the
+ bootstrap Spatial EBLUP for $d$-th area.
+ \item[8)] A parametric bootstrap estimator of $g_{3d}(\btheta)$ is
+ $$
+ g_{3d}^{PB}(\hat\btheta)=B^{-1}\sum_{b=1}^B
+ \left\{\tilde\delta_d^{*(b)}(\hat\btheta^{*(b)})
+ -\tilde\delta_d^{*(b)}(\hat\btheta)\right\}^2.
+ $$
+ Function \verb"pbmseSFH" returns the naive parametric bootstrap estimator of the full MSE, given by
+ \begin{equation}\label{naPB}
+ mse^{naPB}\{\tilde\delta_d(\hat\btheta)\}=B^{-1}\sum_{b=1}^B
+ \left\{\tilde\delta_d^{*(b)}(\hat\btheta^{*(b)})-\delta_d^{*(b)}\right\}^2.
+ \end{equation}
+ Function \verb"pbmseSFH" also returns a bias-corrected MSE estimate obtained as in Pfeffermann and Tiller (2005), and given by
+ \begin{eqnarray}
+ mse^{bcPB}\{\tilde\delta_d(\hat\btheta)\}&=&
+ 2\left\{g_{1d}(\hat\btheta)+g_{2d}(\hat\btheta)\right\}+g_{3d}^{PB}(\hat\btheta)\nonumber\\
+ && -B^{-1}\sum_{b=1}^B \left\{g_{1d}(\hat\btheta^{*(b)})+g_{2d}(\hat\btheta^{*(b)})\right\}.\label{bcPB}
+ \end{eqnarray}
+ \end{itemize}
+%
+%
+%
+\section{Function npbmseSFH}\label{npbmseSpatFH}
+%
+%
+%
+ Function \verb"npbmseSFH" gives MSE estimates for the Spatial EBLUPs under the SFH model
+ (\ref{SFHm})--(\ref{eq:spat}), using the nonparametric bootstrap approach of \cite{Mol:09}. The call to the function is
+ \begin{verbatim}
+ npbmseSFH(formula, vardir, proxmat, B = 100, method = "REML",
+    MAXITER = 100,PRECISION = 0.0001, data)
+ \end{verbatim}
+ \vspace{-0.5 cm}
+ where the arguments are the same as in \verb"pbmseSFH".
+ The function resamples random effects $\{u_1^*,\ldots,u_D^*\}$
+ and errors $\{e_1^*,\ldots,e_D^*\}$ from the respective empirical distribution of
+ predicted random effects $\{\hat u_1,\ldots,\hat u_D\}$ and residuals
+ $\{\hat r_1,\ldots,\hat r_D\}$, where
+ $r_d=\hat\delta_d^{DIR}-\tilde\delta_d(\hat\btheta)$, $d=1,\ldots,D$,
+ all previously standardized. This method avoids the need for distributional assumptions of $u_d$ and $e_d$;
+ therefore, it is expected to be more robust to non-normality of the random model components.
+
+ Under model (\ref{SFHm})--(\ref{eq:spat}), the
+ BLUPs of $\bu$ and $\bv$ are respectively given by
+ $$
+ \tilde{\bv}(\btheta) = \bG(\btheta) \bSigma^{-1}(\btheta)
+ \{\by-\bX\tilde\bbeta(\btheta)\}, \quad
+ \tilde \bu(\btheta)=(\bI-\rho\bW)\tilde{\bv}(\btheta),
+ $$
+ and the covariance matrix of $\tilde \bu(\btheta)$ is
+ $$
+ \bSigma_{\bu}(\btheta)=(\bI-\rho\bW)\bG (\btheta)\bP(\btheta)\bG
+ (\btheta)(\bI-\rho\bW').
+ $$
+ Let us define the vector of residuals obtained from the BLUP
+ $$
+ \tilde\br(\btheta)=\by-\bX\tilde\bbeta(\btheta)-
+ \tilde{\bv}(\btheta)=(\hat\delta_1^{DIR}-\tilde\delta_1(\btheta),\ldots,\hat\delta_D^{DIR}-\tilde\delta_d(\btheta))'.
+ $$
+ It is easy to see that the covariance matrix of $\tilde\br(\btheta)$ is
+ $$
+ \bSigma_{\br}(\btheta)=\bPsi\, \bP(\btheta)\bPsi,
+ $$
+ for $\bP(\btheta)$ defined in (\ref{Ptheta}). The covariance matrices $\bSigma_{\bu}(\btheta)$ and
+ $\bSigma_{\br}(\btheta)$ are not diagonal; hence, the elements of
+ the vectors $\tilde \bu(\btheta)$ and $\tilde\br(\btheta)$ are
+ correlated. Indeed, both $\tilde \bu(\btheta)$ and $\tilde\br(\btheta)$ lie in a
+ subspace of dimension $D-p$. Since the methods that resample from the empirical distribution
+ work well under an ideally iid setup, before resampling a previous standardization step is crucial.
+ Here $\hat\bu=\tilde \bu(\hat\btheta)$ and $\hat\br=\tilde\br(\hat\btheta)$ are transformed
+ to achieve vectors that are as close as possible to be uncorrelated
+ and with unit variance elements. We describe the standardization method only for
+ $\hat\bu$, since for $\hat\br$ the process is analogous. Let us consider the estimated covariance matrix
+ $\hat\bSigma_{\bu}=\bSigma_{\bu}(\hat\btheta)$. The spectral decomposition of
+ $\hat\bSigma_{\bu}$ is
+ $$
+ \hat\bSigma_{\bu}=\bQ_{\bu}\bDelta_{\bu}\bQ_{\bu}',
+ $$
+ where $\bDelta_{\bu}$ is a diagonal matrix with the $D-p$ non-zero
+ eigenvalues of $\hat\bSigma_{\bu}$ and $\bQ_{\bu}$ is the matrix with the
+ corresponding eigenvectors in the columns. Take the square root
+ matrix $\hat\bSigma_{\bu}^{-1/2}=\bQ_{\bu}\bDelta_{\bu}^{-1/2}\bQ_{\bu}'$. Squaring this matrix
+ gives a generalized inverse of $\hat\bSigma_{\bu}$. With the obtained square root, we
+ transform $\hat\bu$ as
+ $$
+ \hat\bu^S=\hat\bSigma_{\bu}^{-1/2}\hat\bu.
+ $$
+ The covariance matrix of $\hat\bu^S$ is then
+ $V(\hat\bu^S)=\bQ_{\bu}\bQ_{\bu}'$,
+ which is close to an identity matrix. Observe
+ that in the transformation
+ $$
+ \hat\bu^S=\bQ_{\bu}\bDelta_{\bu}^{-1/2}\bQ_{\bu}'\hat\bu,
+ $$
+ the vector $\bQ_{\bu}'\hat\bu$ contains the coordinates of
+ $\hat\bu$ in its principal components, which are uncorrelated and with
+ covariance matrix $\bDelta_{\bu}$. Then multiplying by
+ $\bDelta_{\bu}^{-1/2}$, these coordinates are
+ standardized to have unit variance. Finally, this standardized vector in
+ the space of the principal components is returned to the original
+ space by multiplying by $\bQ_{\bu}$. Thus, the transformed vector $\hat\bu^S$ contains the coordinates
+ of the vector $\bDelta_{\bu}^{-1/2}\bQ_{\bu}'\hat\bu$, with standard elements, in the original space.
+ The eigenvalues, which are the variances of the uncorrelated principal components, collect better the
+ variability than the diagonals of $\hat\bSigma_{\bu}$. Indeed,
+ simulations were indicated that
+ taking simply $\hat u_d^S=\hat u_d/\sqrt{v_{dd}}$, where $v_{dd}$ is the
+ $d$-th diagonal element of $\hat\bSigma_{\bu}$, does not work well.
+
+ The final nonparametric bootstrap procedure is obtained by replacing steps 2) and 3) in the
+ parametric bootstrap 1)--8) of Section \ref{pbmseSpatFH} by the new steps 2') and 3') given below:
+ \begin{itemize}
+ \item[2')] With the estimates $\hat\btheta=(\hat A,\hat\rho)'$ and $\hat\bbeta=\tilde\bbeta(\hat\btheta)$
+ obtained in step 1), calculate predictors of $\bv$ and $\bu$ as
+ follows
+ $$
+ \hat{\bv} =
+ \bG(\hat\btheta) \bSigma(\hat\btheta)^{-1}
+ (\by-\bX\hat\bbeta), \quad
+ \hat{\bu} = (\bI-\hat\rho\bW)\hat{\bv}=(\hat u_1,\ldots,\hat u_m)'.
+ $$
+ Then take $\hat\bu^S=\hat\bSigma_{\bu}^{-1/2}\hat\bu=(\hat u_1^S,\ldots, \hat u_D^S)'$, where
+ $\hat\bSigma_{\bu}^{1/2}$ is the square root of the generalized inverse of
+ $\hat\bSigma_{\bu}$ obtained by the spectral decomposition.
+ It is convenient to re-scale the elements $\hat u_d^S$
+ so that they have sample mean exactly equal to zero and sample variance $\hat A$.
+ This is achieved by the transformation
+ $$
+ \hat u_d^{SS}=\frac{\hat A(\hat u_d^S-D^{-1}\sum_{\ell=1}^D \hat u_{\ell}^S)}
+ {\sqrt{D^{-1}\sum_{d=1}^D (\hat u_d^S-D^{-1}\sum_{\ell=1}^D \hat
+ u_{\ell}^S)^2}}, \quad d=1,\ldots,D.
+ $$
+ Construct the vector $\bu^*=(u_1^*,\ldots,u_D^*)'$, whose elements
+ are obtained by extracting a simple random sample with replacement
+ of size $D$ from the set $\{\hat u_1^{SS},\ldots,\hat u_D^{SS}\}$. Then obtain
+ $\bv^*=(\bI-\hat\rho\bW)^{-1}\bu^*$ and calculate the vector of bootstrap
+ target parameters
+ $\bdelta^*=\bX\hat\bbeta+ \bv^*=(\delta_1^*,\ldots,\delta_d^*)'$
+
+ \item[3')] Compute the vector of residuals
+ $\hat\br=\by-\bX\hat\bbeta- \hat{\bv}=(\hat r_1,\ldots,\hat r_D)'$.
+ Standardize these residuals as
+ $\hat\br^S=\hat\bSigma_{\br}^{-1/2}\hat\br=(\hat r_1^S,\ldots,\hat r_D^S)'$, where
+ $\hat\bSigma_{\br}=\bPsi\, \bP(\hat\btheta)\bPsi$ is the estimated covariance matrix and
+ $\hat\bSigma_{\br}^{-1/2}$ is a square root of the generalized inverse
+ derived from the spectral decomposition of $\hat\bSigma_{\br}$. Again,
+ re-standardize these values
+ $$
+ \hat r_d^{SS}=\frac{\hat r_d^S-m^{-1}\sum_{\ell=1}^D \hat r_{\ell}^S}
+ {\sqrt{D^{-1}\sum_{d=1}^D (\hat r_d^S-D^{-1}\sum_{\ell=1}^D \hat
+ r_{\ell}^S)^2}}, \quad d=1,\ldots,D.
+ $$
+ Construct $\br^*=(r_1^*,\ldots,r_D^*)'$ by extracting a
+ simple random sample with replacement of size $D$ from the set
+ $\{\hat r_1^{SS},\ldots,\hat r_D^{SS}\}$. Then take
+ $\be^*=(e_1^*,\ldots,e_D^*)'$, where $e_d^*=\psi_d^{1/2}r_d^*$,
+ $d=1,\ldots, D$.
+ \end{itemize}
+ The function \verb"npbmseSFH" yields naive and bias-corrected nonparametric bootstrap estimators
+  $\mbox{mse}^{naNPB}\{\tilde\delta_d(\hat\btheta)\}$ and
+ $\mbox{mse}^{bcNPB}\{\tilde\delta_d(\hat\btheta)\}$ analogous to (\ref{naPB}) and (\ref{bcPB}) respectively.
+%
+%
+\section{Function eblupSTFH}\label{model2}
+%
+%
+Function \verb"eblupSTFH" gives small area estimators of $\delta_d=h_d(\by_d)$,
+$d=1,\ldots,D$, under an extension of the FH model that takes into account the spatial correlation between
+neighbor areas and also incorporates historical data \citep{Mar:13}. The area parameter for domain $d$ at current time instant $T$
+is estimated borrowing strength from the $T$ time instants and from the $D$ domains. The call to the function is
+\begin{verbatim}
+eblupSTFH(formula, D, T, vardir, proxmat, model = "ST",
+    MAXITER = 100, PRECISION = 0.0001, data)
+\end{verbatim}
+%\vspace{-0.5 cm}
+Let $\theta_{dt}$ be the target area characteristic for area $d$ and time instant
+$t$, for $d=1,\ldots,D$ and $t=1,\ldots,T$. Let $\hat\delta_{dt}^{DIR}$ be a direct estimator of
+$\delta_{dt}$ (left hand side of \verb"formula") and $\bx_{dt}$ a column vector containing the
+aggregated values of $p$ auxiliary variables related linearly with
+$\delta_{dt}$ (right hand side of \verb"formula"). The spatio-temporal FH (STFH) model is
+stated as follows. In the first stage, we assume
+\begin{equation}\label{samplingm}
+\hat\delta_{dt}^{DIR}=\delta_{dt}+e_{dt},\quad d=1,\ldots,D,\quad
+t=1,\ldots,T,
+\end{equation}
+where, given $\delta_{dt}$, sampling errors $e_{dt}$ are assumed
+to be independent and normally distributed with variances
+$\psi_{dt}$ known for all $d$ and $t$ (\verb"vardir"). In the second stage, the
+target parameters for all domains and time points are linked through the model
+\begin{equation}\label{linkingm}
+\delta_{dt}=\bx_{dt}'\bbeta+u_{1d}+u_{2dt},\quad
+d=1,\ldots,D,\quad t=1,\ldots,T.
+\end{equation}
+Here, the vectors of area-time random effects
+$(u_{2d1},\ldots,u_{2dT})'$ are i.i.d. for each area $d$,
+following an AR(1) process with autocorrelation parameter
+$\rho_2$, that is,
+\begin{equation}\label{ARmodel}
+u_{2dt}=\rho_2u_{2d,t-1}+\epsilon_{2dt},\quad
+|\rho_2|<1,\quad \epsilon_{2dt}\stackrel{iid}\sim
+N(0,\sigma_2^2).
+\end{equation}
+The vector of area effects $(u_{11},\ldots,u_{1D})'$
+follows a SAR(1) process with variance parameter $\sigma_1^2$,
+spatial autocorrelation $\rho_1$ and row-standardized proximity
+matrix $\bW=(w_{d,\ell})$ defined as in Section \ref{eblupSFH} (\verb"proxmat"), that is,
+\begin{equation}\label{SARmodel}
+u_{1d}=\rho_1 \sum_{\ell \neq d}
+w_{d,\ell}\,u_{1\ell}+\epsilon_{1d},\quad |\rho_1|<1,\quad
+\epsilon_{1d}\stackrel{iid}\sim N(0,\sigma_1^2),\quad
+d=1,\ldots,D.
+\end{equation}
+
+Let us define the following vectors and matrices obtained by stacking
+the elements of the model in columns
+\begin{eqnarray*}
+&& \by=\underset{1\leq d \leq D}{\hbox{col}}(\underset{1\leq t
+\leq T}{\hbox{col}}(\hat\delta_{dt}^{DIR})),\; \bX=\underset{1\leq
+d \leq D}{\hbox{col}}(\underset{1\leq t \leq
+T}{\hbox{col}}(\bx_{dt}')),\\
+&& \be=\underset{1\leq d \leq
+D}{\hbox{col}}(\underset{1\leq t \leq T}{\hbox{col}}(e_{dt})), \;
+\bu_1=\underset{1\leq d \leq D}{\hbox{col}}(u_{1d})\:\mbox{ and }\:
+\bu_2=\underset{1\leq d \leq D}{\hbox{col}}(\underset{1\leq t \leq
+T}{\hbox{col}}(u_{2dt}).
+\end{eqnarray*}
+Defining additionally $\bZ_1=\bI_D\bigotimes\uno_{T}$ where
+$\bI_D$ is the $D\times D$ identity matrix, $\uno_{T}$ is a
+vector of ones of size $T$ and $\bigotimes$ is the Kronecker
+product, $\bZ_2=\bI_n$, where $n=DT$ is the total number of
+observations, $\bu=(\bu_1',\bu_2')'$ and $\bZ=(\bZ_1,\bZ_2)$, the
+model can be expressed as a general linear mixed model in the form
+\begin{equation*}
+\by=\bX\bbeta+\bZ\bu+\be.
+\end{equation*}
+
+Let $\btheta=(\sigma_1^2,\rho_1,\sigma_2^2,\rho_2)'$ be the vector
+of unknown parameters involved in the covariance matrix of $\by$.
+Observe that here $\be\sim N(\cero_n,\bPsi)$, where
+$\cero_n$ denotes a vector of zeros of size $n$ and $\bPsi$ is
+the diagonal matrix $\bPsi={\hbox{diag}}_{1\leq d \leq
+D}({\hbox{diag}}_{1\leq t \leq T}(\psi_{dt}))$. Moreover,
+$\bu\sim N\{\cero_n,\bG(\btheta)\}$, where the covariance matrix is the block diagonal matrix
+$\bG(\btheta)=\hbox{diag}\{\sigma_1^2\Omega_1(\rho_1),\sigma_2^2\Omega_2(\rho_2)\}$,
+with
+\begin{eqnarray}
+\hspace{-1 cm}&&\Omega_1(\rho_1)=\big\{(\bI_D-\rho_1\bW)^\prime(\bI_D-\rho_1\bW)\big\}^{-1},\label{Omega1}\\
+\hspace{-1 cm}&& \Omega_2(\rho_2)={\hbox{diag}}_{1\leq d \leq
+D}\{\Omega_{2d}(\rho_2)\},\nonumber\\
+\hspace{-1 cm}&& \Omega_{2d}(\rho_2)=\frac{1}{1-\rho_2^2}\left(\begin{array}{ccccc}
+1&\rho_2&\ldots&\rho_2^{T-2}&\rho_2^{T-1}\\
+\rho_2&1&\ddots&&\rho_2^{T-2}\\
+\vdots&\ddots&\ddots&\ddots&\vdots\\
+\rho_2^{T-2}&&\ddots&1&\rho_2\\
+\rho_2^{T-1}&\rho_2^{T-2}&\ldots&\rho_2&1
+\end{array}\right)_{T\times T},\ d=1,\ldots,D. \label{Omega2d}
+ \end{eqnarray}
+ Thus, the covariance matrix of $\by$ is given by
+ $$
+ \bSigma(\btheta)=\bZ\bG(\btheta)\bZ^\prime+\bPsi.
+ $$
+
+ The WLS estimator of $\bbeta$ and the (componentwise) BLUP of $\bu$ obtained by \cite{Henderson1975} are given by
+ \begin{eqnarray}
+ &&\tilde{\bbeta}(\btheta)=\left\{\bX'\bSigma^{-1}(\btheta)\bX\right\}^{-1}\bX'\bSigma^{-1}(\btheta)\by, \nonumber\\
+ &&\tilde{\bu}(\btheta)=\bG(\btheta)\bZ'\bSigma^{-1}(\btheta)\{\by-\bX\tilde\bbeta(\btheta)\}. \label{BLUP}
+ \end{eqnarray}
+ Since $\bu=(\bu_1',\bu_2')'$, the second identity leads to the BLUPs of $\bu_1$ and
+ $\bu_2$, respectively given by
+ \begin{eqnarray*}
+ \tilde{\bu}_1(\btheta) &=&
+ \sigma_1^2\Omega_1(\rho_1)\bZ_1'\bSigma^{-1}(\btheta)\{\by-\bX\tilde{\bbeta}(\btheta)\},\\
+ \tilde{\bu}_2(\btheta) &=& \sigma_2^2\Omega_2(\rho_2)\bSigma^{-1}(\btheta)\{\by-\bX\tilde{\bbeta}(\btheta)\}.
+ \end{eqnarray*}
+
+ Replacing an estimator $\hat\btheta$ for $\btheta$ in previous
+ formulas we obtain $\hat{{\bbeta}}=\tilde{\bbeta}(\hat\btheta)$
+ and the EBLUPs of $\bu_1$ and $\bu_2$ respectively,
+ $$
+ \hat{\bu}_1 = \tilde{\bu}_1(\hat\btheta)=(\hat{u}_{11},\ldots,\hat{u}_{1D})'\:\mbox{ and }\:\hat{\bu}_2 =
+ \tilde{\bu}_2(\hat\btheta)=(\hat{u}_{211},\ldots,\hat{u}_{2DT})'.
+ $$
+
+ Finally, the EBLUP of the area characteristic $\delta_{dt}$ under the
+ STFH model (\ref{samplingm})--(\ref{SARmodel}) returned by function \verb"eblupSTFH" is given by
+ $$
+ \hat\delta_{dt}=\bx_{dt}'\hat{\bbeta}+\hat{u}_{1d}+\hat{u}_{2dt},\quad d=1,\ldots,D,\quad
+ t=1,\ldots,T.
+ $$
+ The following subsection describes the REML model fitting procedure applied by function \verb"eblupSTFH"
+ to estimate $\btheta$ and $\bbe$.
+
+ \begin{remark}
+ Computation of the inverse of the $n\times n$ matrix $\bSigma(\btheta)$ involved in
+ (\ref{BLUP}) can be too time consuming for large $n$. This is
+ replaced by the inversion of two smaller matrices as follows.
+ Observe that $\bSigma(\btheta)$ can be expressed as
+ $$
+ \bSigma(\btheta)= \sigma_1^2\bZ_1\Omega_1(\rho_1)\bZ_1^\prime+\bGamma(\btheta),
+ $$
+ where $\bGamma(\theta)={\hbox{diag}}_{1\leq d
+\leq D}\{\Gamma_d(\theta)\}$ and
+$\Gamma_d(\theta)=\sigma_2^2\Omega_{2d}(\rho_2)+{\hbox{diag}}_{1\leq t
+\leq T}(\psi_{dt})$, $d=1,\ldots,D$. Applying the inversion
+formula
+\begin{equation}\label{invmat}
+(A+CBD)^{-1}=A^{-1}-A^{-1}C(B^{-1}+DA^{-1}C)^{-1}DA^{-1}
+\end{equation}
+with $A=\bGamma(\btheta)$, $B=\sigma_1^2\Omega_1(\rho_1)$,
+$C=\bZ_1$ and $D=\bZ_1^\prime$, we obtain
+$$
+\bSigma^{-1}(\btheta)=\bGamma^{-1}(\btheta)-\bGamma^{-1}(\btheta)\bZ_1\left\{\sigma_1^{-2}\Omega_1^{-1}(\rho_1)+\bZ_1^\prime
+\bGamma^{-1}(\btheta)\bZ_1\right\}^{-1}\bZ_1^\prime \bGamma^{-1}(\btheta),
+$$
+where $\bGamma^{-1}(\btheta)={\hbox{diag}}_{1\leq d \leq
+D}\{\Gamma_d^{-1}(\theta)\}$. Here, $\Gamma_d(\theta)$ is inverted using
+again (\ref{invmat}). This procedure only requires inversion of the $T\times T$ matrix $\Omega_{2d}(\rho_2)$
+given in (\ref{Omega2d}), which is
+constant for all $d$, and the $D\times D$ matrix $\Omega_1(\rho_1)$ given in (\ref{Omega1}).
+ \end{remark}
+%
+%
+\subsection{REML fitting method}
+ %
+ %
+ REML fitting method maximizes the restricted likelihood, which is the joint
+ p.d.f. of a vector of $n-p$ linearly independent contrasts $\bF'\by$, where $\bF$ is an
+ $n\times (n-p)$ full column rank matrix satisfying
+ $\bF'\bF=\bI_{n-p}$ and $\bF'\bX=\cero_{n-p}$. It holds that
+ $\bF'\by$ is independent of $\hat\bbeta$ given in (\ref{BLUP}).
+ Consequently, the p.d.f. of $\bF'\by$ does not depend on $\bbeta$ and is given by
+ $$
+ f_R(\btheta;\by)=(2\pi)^{-(n-p)/2}|\bX'\bX|^{1/2}|\bSigma(\btheta)|^{-1/2}|\bX'\bSigma^{-1}(\btheta)\bX|^{-1/2}\exp\left\{-\frac{1}{2}\by'\bP(\btheta)\by\right\},
+ $$
+ where
+ $$
+ \bP(\btheta)=\bSigma^{-1}(\btheta)-\bSigma^{-1}(\btheta)\bX\left\{\bX^\prime\bSigma^{-1}(\btheta)\bX \right\}^{-1}\bX^\prime\bSigma^{-1}(\btheta).
+ $$
+ Observe that $\bP(\btheta)$ satisfies $\bP(\btheta)\bSigma(\btheta)\bP(\btheta)=\bP(\btheta)$ and
+ $\bP(\btheta)\bX=\cero_{n}$.
+
+ The REML estimator of $\btheta=(\theta_1,\ldots,\theta_4)'=(\sigma_1^2,\rho_1,\sigma_2^2,\rho_2)'$
+ is the maximizer of $\ell_R(\btheta;\by)=\log
+ f_R(\btheta;\by)$. This maximum is computed using the Fisher-scoring algorithm.
+ Let $\bS_R(\btheta)=\partial \ell_R(\btheta;\by)/\partial \btheta=(S_1^R(\btheta),\ldots,S_4^R(\btheta))'$
+ be the scores vector and ${\cal I}_R(\btheta)=-E\{\partial^2 \ell_R(\btheta;\by)/\partial \btheta\partial
+ \btheta'\}=({\cal I}_{rs}^R(\btheta))$ the Fisher information matrix associated
+ with $\btheta$. Using the fact that
+ $$
+ \frac{\partial \bP(\btheta)}{\partial \theta_r}=-\bP(\btheta)\frac{\partial \bSigma(\btheta)}{\partial
+ \theta_r}\bP(\btheta),\quad r=1,\ldots,4,
+ $$
+ the first order partial derivative of $\ell_R(\btheta;\by)$ with
+ respect to $\theta_r$ is
+ $$
+ S_r^R(\btheta)=-\frac{1}{2}\,\hbox{tr}\left\{\bP(\btheta)\frac{\partial \bSigma(\btheta)}{\partial
+ \theta_r}\right\}+\frac{1}{2}\,\by^\prime\bP(\btheta)\frac{\partial\bSigma(\btheta)}{\partial
+ \theta_r}\bP(\btheta)\by,\quad r=1,\ldots,4.
+ $$
+ The element $(r,s)$ of the Fisher information matrix is the expected value of the negative
+ second order partial derivative of $\ell_R(\btheta;\by)$ with respect to $\theta_r$ and
+ $\theta_s$, which yields
+ $$
+ {\cal I}_{rs}^R(\btheta)=\frac{1}{2}\hbox{tr}\left\{\bP(\btheta)\frac{\partial \bSigma(\btheta)}{\partial
+ \theta_r}\bP(\btheta)\frac{\partial \bSigma(\btheta)}{\partial
+ \theta_s}\right\},\quad
+ r,s=1,\ldots,4.
+ $$
+ Then, if $\btheta^{(k)}$ is the value of the estimator at iteration $k$,
+ the updating formula of the Fisher-scoring algorithm is given by
+ $$
+ \btheta^{(k+1)}=\btheta^{(k)}+{\cal I}_R^{-1}(\btheta^{(k)})\bS_R(\btheta^{(k)}).
+ $$
+Finally, the partial derivatives of $\bSigma(\btheta)$ with respect to
+the components of $\btheta$, involved in $\bS_R(\btheta)$ and
+${\cal I}_R(\btheta)$, are given by
+$$
+\begin{array}{ll}
+\displaystyle{\frac{\partial\bSigma(\btheta)}{\partial\sigma_1^2}}=\bZ_1\Omega_1(\rho_1)\bZ_1^\prime,&
+\displaystyle{\frac{\partial\bSigma(\btheta)}{\partial\rho_1}}=-\sigma_1^2\bZ_1\Omega_1(\rho_1)\displaystyle{\frac{\partial\Omega_1^{-1}(\rho_1)}{\partial\rho_1}}\Omega_1(\rho_1)\bZ_1^\prime,\\
+\displaystyle{\frac{\partial\bSigma(\btheta)}{\partial\sigma_2^2}}=\underset{1\leq
+d \leq D}{\hbox{diag}}\left\{\Omega_{2d}(\rho_2)\right\}, &
+\displaystyle{\frac{\partial\bSigma(\btheta)}{\partial\rho_2}}=\sigma_2^2
+\underset{1\leq d \leq
+D}{\hbox{diag}}\left\{\displaystyle{\frac{\partial\Omega_{2d}(\rho_2)}{\partial\rho_2}}\right\},
+\end{array}
+$$
+where
+$$
+\frac{\partial\Omega_1^{-1}(\rho_1)}{\partial\rho_1} =
+-\bW-\bW^\prime+2\rho_1\bW^\prime\bW
+$$
+and
+$$
+\frac{\partial\Omega_{2d}(\rho_2)}{\partial\rho_2}=\frac{1}{1-\rho_2^2}\left(\begin{array}{ccccc}
+0&1&\ldots&\ldots&(T-1)\rho_2^{T-2}\\
+1&0&\ddots&&(T-2)\rho_2^{T-3}\\
+\vdots&\ddots&\ddots&\ddots&\vdots\\
+(T-2)\rho_2^{T-3}&&\ddots&0&1\\
+(T-1)\rho_2^{T-2}&\ldots&\ldots&1&0
+\end{array}\right)
++ \frac{2\rho_2\Omega_{2d}(\rho_2)}{1-\rho_2^2}.
+$$
+ %
+ %
+ \section{Function pbmseSTFH}\label{pbmse}
+ %
+ %
+ Function \verb"pbmseSTFH" gives parametric bootstrap
+ MSE estimates for the EBLUPs of the domain parameters under the
+ STFH model (\ref{samplingm})--(\ref{SARmodel}) as in \cite{Mar:13}.
+ The call to the function is
+ \begin{verbatim}
+ pbmseSTFH(formula, D, T, vardir, proxmat, B = 100, model = "ST",
+          MAXITER = 100, PRECISION = 0.0001, data)
+ \end{verbatim}
+ \vspace{-0.5 cm}
+ where the arguments are the same as in \verb"eblupSTFH", together with the number of bootstrap
+ replicates \verb"B". The parametric bootstrap procedure is described below:
+ \begin{itemize}
+ \item[(1)] Using the available data $\{(\hat\delta_{dt}^{DIR},\bx_{dt}), t=1,\ldots,T, d=1,\ldots,D\}$,
+ fit the STFH model (\ref{samplingm})--(\ref{SARmodel})
+ and obtain model parameter estimates
+ $\hat\bbeta$, $\hat\sigma_1^2$, $\hat\rho_1$,
+ $\hat\sigma_2^2$ and $\hat\rho_2$.
+ \item[(2)] Generate bootstrap area effects $\{u_{1d}^{*(b)}, d=1,\ldots,D\}$,
+  from the SAR(1) process given in (\ref{SARmodel}), using $(\hat\sigma_1^2,\hat\rho_1)$ as true values of parameters $(\sigma_1^2,\rho_1)$.
+ \item[(3)] Independently of $\{u_{1d}^{*(b)}\}$ and
+ independently for each $d$, generate bootstrap time effects $\{u_{2dt}^{*(b)}, t=1,\ldots,T\}$,
+ from the AR(1) process given in (\ref{ARmodel}), with $(\hat\sigma_2^2,\hat\rho_2)$ acting as true values of parameters $(\sigma_2^2,\rho_2)$.
+ \item [(4)] Calculate true bootstrap quantities,
+ $$
+ \delta_{dt}^{*(b)}=\bx_{dt}^\prime\hat{\bbeta}+u_{1d}^{*(b)}+u_{2dt}^{*(b)},\quad t=1,\ldots,T,\quad d=1,\ldots,D.
+ $$
+ \item[(5)] Generate errors $e_{dt}^{*(b)}\stackrel{ind.}\sim
+ N(0,\psi_{dt})$ and obtain bootstrap data from the sampling
+ model,
+ $$
+ \hat\delta_{dt}^{DIR*(b)}=\delta_{dt}^{*(b)}+e_{dt}^{*(b)}, \quad t=1,\ldots,T,\quad
+ d=1,\ldots,D.
+ $$
+ \item[(6)] Using the new bootstrap data $\{(\hat\delta_{dt}^{DIR*(b)},\bx_{dt}), t=1,\ldots,T, d=1,\ldots,D\}$,
+ fit the STFH model (\ref{samplingm})--(\ref{SARmodel}) and obtain the bootstrap EBLUPs,
+ $$
+ \hat\delta_{dt}^{*(b)}=\bx_{dt}'\hat{\bbeta}^{*(b)} +
+ \hat{u}_{1d}^{*(b)}+\hat{u}_{2dt}^{*(b)},\quad
+ t=1,\ldots,T,\quad d=1,\ldots,D.
+ $$
+ \item[(7)] Repeat steps (1)-(6) for $b=1,\ldots,B$, where $B$
+ is a large number.
+ \item[(8)] The parametric bootstrap MSE estimates returned by function \verb"pbmseSTFH" are given by
+ \begin{equation}\label{pbmseest}
+ mse(\hat\delta_{dt})=\frac{1}{B}\sum_{b=1}^B\left(\hat\delta_{dt}^{*(b)}-\delta_{dt}^{*(b)}\right)^2,\quad
+ t=1,\ldots,T,\quad d=1,\ldots,D.
+ \end{equation}
+ \end{itemize}
+
+
+
+\section{Function eblupBHF}
+
+ Function \verb"eblupBHF" estimates the area means $\bar Y_d$, $d=1,\ldots,D$, under the
+ unit level model introduced by \cite{Bat:88} (BHF model). The call to the function is
+ \begin{verbatim}
+ eblupBHF(formula, dom, selectdom, meanxpop, popnsize,
+    method = "REML", data)
+ \end{verbatim}
+ \vspace{-0.5 cm}
+ The function allows to select a subset of domains for estimation through the argument \verb"selectdom",
+ but dropping this argument it estimates in all domains.
+ Let $Y_{dj}$ be the value of the target variable for unit $j$ in domain $d$ (left hand side of \verb"formula").
+ The BHF model assumes
+ \begin{eqnarray}
+ && Y_{dj}=\bx_{dj}'\bbeta+u_d+e_{dj},\quad j=1,\ldots, N_d,\quad d=1,\ldots, D, \nonumber\\
+ && u_d\stackrel{iid}\sim N(0,\sigma_u^2),\quad e_{dj}\stackrel{iid}\sim
+ N(0,\sigma_e^2), \label{nestedmodel}
+ \end{eqnarray}
+ where $\bx_{dj}$ is a vector containing the values of $p$ explanatory variables for the same unit (right hand side of \verb"formula"),
+ $u_d$ is the area random effect and $e_{dj}$ is the individual error,
+ where area effects $u_d$ and errors $e_{dj}$ are independent.
+ Let us define vectors and matrices obtained by stacking in columns the elements for
+ domain $d$
+ $$
+ \by_d=\underset{1\leq j \leq N_d}{\hbox{col}}(Y_{dj}),\quad
+ \bX_d=\underset{1\leq j \leq N_d}{\hbox{col}}(\bx_{dj}),\quad
+ \be_d=\underset{1\leq j \leq N_d}{\hbox{col}}(e_{dj}).
+ $$
+ Then, the domain vectors $\by_d$ are independent and follow the
+ model
+ $$
+ \by_d=\bX_d\bbeta+u_d\uno_{N_d}+\be_d,\quad \be_d\sim \mbox{ind}\
+ N(\cero,\sigma_e^2\bI_{N_d}),\quad d=1,\ldots, D,
+ $$
+ where $u_d$ is independent of $\be_d$. Under this model, the mean vector
+ and the covariance matrix of $\by_d$ are given by
+ $$
+ \bmu_d=\bX_d\bbeta\quad \mbox{and}\quad
+ \bV_d=\sigma_u^2\uno_{N_d}\uno_{N_d}^{\prime}+\sigma_e^2\bI_{N_d}.
+ $$
+
+ Consider the decomposition of $\by_d$ into sample and out-of-sample
+ elements $\by_d=(\by_{dr}',\by_{ds}')'$, and the corresponding
+ decomposition of $\bX_d$ and $\bV_d$ as
+ $$
+ \bX_d=\left(\begin{array}{c}
+ \bX_{ds}\\
+ \bX_{dr}
+ \end{array}\right),\quad \bV_d=\left(\begin{array}{cc}
+ \bV_{ds} & \bV_{dsr}\\
+ \bV_{drs} & \bV_{dr}
+ \end{array}\right).
+ $$
+ If $\sigma_u^2$ and $\sigma_e^2$ are known, the BLUP of the small area mean $\bar Y_d$ is given by
+ \begin{equation}\label{BLUP_BHF}
+ \tilde{\bar Y}_d=\frac{1}{N_d}\left(\sum_{j\in s_d}Y_{dj}+\sum_{j\in r_d}\tilde
+ Y_{dj}\right),
+ \end{equation}
+ where $\tilde
+ Y_{dj}=\bx_{dj}'\tilde\bbeta+\tilde u_d$ is the BLUP of $Y_{dj}$. Here, $\tilde\bbeta$
+ is the WLS estimator of $\bbeta$ and $\tilde u_d$ is the BLUP of $u_d$, given respectively by
+ \begin{eqnarray}
+ && \tilde\bbeta =\left(\sum_{d=1}^D \bX_d\bV_{ds}^{-1}\bX_d'\right)^{-1}\sum_{d=1}^D \bX_d\bV_{ds}^{-1}\by_d, \label{BLUE_BHF}\\
+ && \tilde u_d=\gamma_d(\bar y_{ds}-\bar\bx_{ds}'\tilde\bbeta), \label{BLUPu_BHF}
+ \end{eqnarray}
+ where $\bar y_{ds}=n_d^{-1}\sum_{j\in s_d} Y_{dj}$, $\bar \bx_{ds}=n_d^{-1}\sum_{j\in s_d} \bx_{dj}$ and
+ $\gamma_d=\sigma_u^2/(\sigma_u^2+\sigma_e^2/n_d)$, $d=1,\ldots,D$.
+
+ Let $\hat\sigma_u^2$ and $\hat\sigma_e^2$ be consistent estimators of $\sigma_u^2$ and $\sigma_e^2$ respectively, such as
+ those obtained by ML or REML. The EBLUP is
+\begin{equation}\label{EBLUP_BHF}
+ \hat{\bar Y}_d=\frac{1}{N_d}\left(\sum_{j\in s_d}Y_{dj}+\sum_{j\in r_d}\hat
+ Y_{dj}\right),
+ \end{equation}
+ where $\hat
+ Y_{dj}=\bx_{dj}'\hat\bbeta+\hat u_d$ is the EBLUP of $Y_{dj}$, $\hat\bbeta$
+ and $\hat u_d$ are given respectively by
+ \begin{eqnarray}
+ && \hat\bbeta =\left(\sum_{d=1}^D \bX_d\hat\bV_{ds}^{-1}\bX_d'\right)^{-1}\sum_{d=1}^D \bX_d\hat\bV_{ds}^{-1}\by_d \label{EBLUE_BHF}\\
+ && \hat u_d=\hat\gamma_d(\bar y_{ds}-\bar\bx_{ds}'\hat\bbeta), \label{EBLUPu_BHF}
+ \end{eqnarray}
+ with $\hat\gamma_d=\hat\sigma_u^2/(\hat\sigma_u^2+\hat\sigma_e^2/n_d)$
+ and $\hat\bV_{ds}=\hat\sigma_u^2\uno_{n_d}\uno_{n_d}^{\prime}+\hat\sigma_e^2\bI_n$, $d=1,\ldots,D$.
+ Replacing (\ref{EBLUE_BHF}) and (\ref{EBLUPu_BHF}) in (\ref{EBLUP_BHF}), we obtain the expression for
+ the EBLUP of $\bar Y_d$ returned by function \verb"eblupBHF" ,
+ $$
+ \hat{\bar Y}_d=f_d\,\bar y_{ds}+\left(\bar\bX_d-f_d\,\bar \bx_{ds}\right)'\hat\bbeta+(1-f_d)\hat u_d,
+ $$
+ where $f_d=n_d/N_d$ is the sampling fraction. Note that the EBLUP requires the vector of population
+ means of the auxiliary variables $\bar\bX_d$ (\verb"meanxpop") and the population sizes (\verb"popnsize") apart from
+ the sample data (specified in \verb"formula"), but the individual values of the auxiliary variables
+ for each population unit are not needed.
+ %Observe also that when $n_d/N_d\approx 0$, the EBLUP becomes
+ %$$
+ %\hat{\bar Y}_d\approx\gamma_d\left\{\bar y_{ds}+(\bar\bX_d-\bar \bx_{ds})'\hat{\bbeta}\right\}
+ %+(1-\gamma_d)\bar\bX_d'\hat{\bbeta},
+ %$$
+ %that is, the EBLUP is a weighted average of the ``survey regression" estimator $\bar y_{ds}+(\bar\bX_d-\bar \bx_{ds})'\hat{\bbeta}$
+ %and the regression synthetic estimator $\bar\bX_d'\hat{\bbeta}$.
+
+
+ \section{Function pbmseBHF}
+
+ Function \verb"pbmseBHF" gives a parametric bootstrap MSE estimate for the EBLUP under the BHF model
+ (\ref{nestedmodel}). The call to the function is
+ \begin{verbatim}
+ pbmseBHF(formula, dom, selectdom, meanxpop, popnsize, B = 200,
+    method = "REML", data)
+ \end{verbatim}
+ \vspace{-0.5 cm}
+ The function applies the parametric bootstrap procedure for finite populations introduced by
+ \cite{Gon:08} particularized to the estimation of means. The estimated MSEs are obtained as follows:
+ \begin{itemize}
+ \item[1)] Fit the BHF model (\ref{nestedmodel}) to sample data $\by_s=(\by_{1s}',\ldots,\by_{Ds}')'$ and obtain model
+ parameter estimates $\hat\bbeta$, $\hat\sigma_u^2$ and $\hat\sigma_e^2$.
+ \item[2)] Generate bootstrap domain effects as $u_d^{*(b)}\stackrel{iid}\sim
+ N(0,\hat\sigma_u^2)$, $d=1,\ldots, D$.
+ \item[3)] Generate, independently of the random effects $u_d^{*(b)}$, bootstrap errors for sample elements
+ $e_{dj}^{*(b)}\stackrel{iid}\sim N(0,\hat\sigma_e^2)$, $j\in s_d$, and
+ error domain means $\bar E_d^{*(b)}\stackrel{iid}\sim N(0,\hat\sigma_e^2/N_d)$, $d=1,\ldots,D$.
+, \item[4)] Compute the true domain means of this bootstrap population, given by
+ $$
+ \bar Y_d^{*(b)}=\bar\bX_d'\hat\bbeta+u_d^{*(b)}+\bar E_d^{*(b)},\quad d=1,\ldots, D.
+ $$
+ Observe that computation of $\bar Y_d^{*(b)}$ does not require the individual values
+ $\bx_{dj}$, for each out-of-sample unit $j\in r_d$.
+ \item[5)] Using the known sample vectors $\bx_{dj}$, $j\in s_d$, generate the model responses for sample elements from the model
+ $$
+ Y_{dj}^{*(b)}=\bx_{dj}'\hat\bbeta+u_d^{*(b)}+e_{dj}^{*(b)},\quad j\in s_d,\quad d=1,\ldots, D.
+ $$
+ Let $\by_{s}^{*(b)}=((\by_{1s}^{*(b)})',\ldots,(\by_{Ds}^{*(b)})')'$ be the bootstrap sample data vector.
+ \item[6)] Fit the BHF model (\ref{nestedmodel}) to bootstrap data $\by_s^{*(b)}$ and obtain the
+ bootstrap EBLUPs $\hat{\bar Y}_d^{*(b)}$, $d=1,\ldots,D$.
+ \item[7)] Repeat steps 2)--7) for $b=1,\ldots,B$.
+ Let $\bar Y_d^{*(b)}$ be the true mean and $\hat{\bar Y}_d^{*(b)}$ the corresponding EBLUP
+ of domain $d$ for bootstrap replicate $b$. The parametric bootstrap estimates of the
+ MSEs of the EBLUPs $\hat{\bar Y}_d$ returned by function \verb"pbmseBHF" are given by
+ \begin{equation}\label{bootmseEBP}
+ mse(\hat{\bar Y}_d)=\frac{1}{B}\sum_{b=1}^B
+ \left(\hat{\bar Y}_d^{*(b)}-\bar Y_d^{*(b)}\right)^2,\quad d=1,\ldots,D.
+ \end{equation}
+
+ \end{itemize}
+
+
+
+ %The distribution of the out-of-sample vector $\by_{dr}$ given
+ %the sample data $\by_{ds}$ is given by
+ %(\ref{CondDistDomaind}) where, for this particular model, the
+%conditional mean vector and covariance matrix are given by
+ %\begin{eqnarray}
+ %&& \bmu_{dr|s}=\bX_{dr}\bbeta+\sigma_u^2\uno_{N_d-n_d}
+ %\uno_{n_d}\prime\bV_{ds}^{-1}(\by_{ds}-\bX_{ds}\bbeta),\label{mudrs}\\
+ %&&
+ %\bV_{dr|s}=\sigma_u^2(1-\gamma_d)\uno_{N_d-n_d}\uno_{N_d-n_d}\prime+\sigma_e^2\bI_{N_d-n_d},\label{mudrsvar}
+ %\end{eqnarray}
+ %with $\gamma_d=\sigma_u^2(\sigma_u^2+\sigma_e^2/n_d)^{-1}$.
+
+
+ \section{Function ebBHF}
+
+ Function \verb"ebBHF" estimates non linear area parameters $\delta_d=h_d(\by_d)$, $d=1,\ldots,D$
+ under the BHF model (\ref{nestedmodel}), using the empirical best/Bayes (EB) method of \cite{Mol:10}. The call to the function is
+ \begin{verbatim}
+ ebBHF(formula, dom, selectdom, Xnonsample, MC = 100, data,
+      transform = "BoxCox", lambda = 0, constant = 0, indicator)
+ \end{verbatim}
+ \vspace{-0.5 cm}
+ where the function $h_d()$ is specified by the user (\verb"indicator").
+ This function assumes that model responses $Y_{dj}$ are obtained by a
+ transformation of the values $E_{dj}$ of a quantitative variable
+ as $Y_{dj}=T(E_{dj})$. The transformation $T()$ (\verb"transform") must
+ be selected by the user between the Box-Cox family or the power family of transformations,
+ to achieve approximate normality of the $Y_{dj}$ values. Both families contain two parameters, an additive
+ constant $m$ and a power $\lambda$. The Box-Cox family is
+ given by
+ $$
+ T(E_{dj})=\left\{\begin{array}{cc}
+ \left\{(E_{dj}+m)^{\lambda}-1\right\}/\lambda,& \lambda\neq 0;\\
+ \log(E_{dj}+m),& \lambda=0,
+ \end{array}\right.
+ $$
+ and the power family is
+ $$
+ T(E_{dj})=\left\{\begin{array}{cc}
+ (E_{dj}+m)^{\lambda},& \lambda\neq 0;\\
+ \log(E_{dj}+m),& \lambda=0.
+ \end{array}\right.
+ $$
+ The parameters $m$ (\verb"constant") and $\lambda$ (\verb"lambda") must be specified by the user.
+ Note that setting $m=0$ and $\lambda=1$ means no transformation.
+ Function \verb"ebBHF" assumes that the transformed variables $Y_{dj}=T(E_{dj})$ follow
+ the BHF model (\ref{nestedmodel}).
+
+ Let $\by_d=(\by_{ds}^{\prime},\by_{dr}^{\prime})^{\prime}$ be the
+ vector containing the values of the transformed variables $Y_{dj}$
+ for the sample and out-of-sample units within domain $d$.
+ The best predictor of $\delta_d=h_d(\by_d)$ is given by
+ \begin{equation}\label{BPYdi}
+ \tilde\delta_d=E_{\by_{dr}}\left[h_d(\by_d)|\by_{ds}\right] = \int h_d(\by_d)f(\by_{dr}|\by_{ds})\,d
+ \by_{dr},
+ \end{equation}
+ where $f(\by_{dr}|\by_{ds})$ is the joint density of $\by_{dr}$ given the observed data vector
+ $\by_{ds}$. The expectation in (\ref{BPYdi}) is approximated by Monte Carlo.
+ For this, function \verb"ebBHF" generates $L$ replicates $\{\by_{dr}^{(\ell)};\ell=1,\ldots,L\}$ of
+ $\by_{dr}$ from the estimated conditional distribution of $\by_{dr}|\by_{ds}$,
+ where $L$ can be specified by the user (\verb"MC").
+ The elements of $\by_{dr}$ or non-sample values $Y_{dj}^{(\ell)}$ are generated from the estimated model
+\begin{eqnarray}
+&& Y_{dj}^{(\ell)} = \bx_{dj}' \hat\bbeta +\hat u_d+v_d +{\rm {\bf
+\varepsilon }}_{di} ,\label{Ydjgener} \\
+&& v_d \sim N(0,\hat\sigma _u^2 (1-\hat\gamma
+_d )),\ {\rm {\varepsilon }}_{dj} \sim N(0,\hat\sigma_e^2),\ j\in
+r_d,\ d=1,\ldots, D, \label{vdepsilondj}
+\end{eqnarray}
+where $\hat\bbeta$, $\hat\sigma_u^2$ and $\hat\sigma_e^2$ are the estimated model parameters.
+Attaching the sample values $\by_{ds}$ to the generated out-of-sample vector $\by_{dr}^{(\ell)}$,
+full population vectors $\by_d^{(\ell)}=((\by_{dr}^{(\ell)})',\by_{ds}')'$ are obtained. Then, function \verb"ebBHF"
+returns the Monte Carlo approximation to the EB predictor of $\delta_d$,
+ \begin{equation}\label{EBpred}
+ \hat \delta_d=\frac{1}{L}\sum_{\ell=1}^L h_d(\by_{d}^{(\ell)}).
+ \end{equation}
+
+ Examples of non linear area parameters are the members of the FGT family of poverty indicators
+ defined by \cite{Fos:84}, which for domain $d$ are given by
+ \begin{equation}\label{FGTmeasure}
+ F_{\alpha d}
+ =\frac{1}{N_d}\sum_{j=1}^{N_d}\left(\frac{z-E_{dj}}{z}\right)^{\alpha}I(E_{dj}<z),\quad
+ \alpha\geq 0,
+ \end{equation}
+ where $E_{dj}$ is in this case a welfare measure such as income or expenditure,
+ $z$ is the poverty line defined for the population and $I(\mbox{condition})$ is the indicator function
+ with value 1 when condition is true and 0 otherwise. If a transformation $T()$ is specified
+ through the arguments \verb"transform", \verb"lambda" and \verb"constant",
+ the function \verb"ebBHF" calculates the EB estimates (\ref{EBpred}) of the parameters
+ $$
+ \delta_d=h_d(\by_d)=\frac{1}{N_d}\sum_{j=1}^{N_d}\left(\frac{z-T^{-1}(Y_{dj})}{z}\right)^{\alpha}I(T^{-1}(Y_{dj})<z),\quad
+ d=1,\ldots,D.
+ $$
+
+ %\section{Function sebBHF}
+% Generation of out-of-sample values $Y_{dj}$, $j\in U_d-s_d$, from (\ref{Ydjgener})-(\ref{vdepsilondj})
+% requires the availability of the values of auxiliary variables for all out-of-sample units. However, often
+% only sample data are available. In this case, the exact EB estimator cannot be obtained but
+% function \verb"sebBHF" obtains approximated EB estimates of the domain parameters $\delta_d=h(\by_d)$, $d=1,\ldots,D$.
+% This function replicates each sample vector $\bx_{dj}$, $j\in s_d$, a number of times equal to $w_{dj}-1$ and these vectors will
+% have the role of the out-of-sample vectors in the EB method. Thus, out-of-sample values $Y_{dj}$, $j\in U_d-s_d$,
+% will be generated from (\ref{Ydjgener})-(\ref{vdepsilondj}) using the replicated vectors $\bx_{dj}$. The size of this vector
+% is $\sum_{j\in s_d}w_{dj}-n_d=\hat N_d-n_d$. Then, sample values $\by_{ds}$ are attached to the generated out-of-sample vector $\by_{dr}^{(\ell)}$, obtaining
+% full population vectors $\by_d^{(\ell)}=((\by_{dr}^{(\ell)})',\by_{ds}')'$ of size $\hat N_d$. Then, function \verb"sebBHF"
+% returns an approximate EB predictor of $\delta_d$, called here sample EB predictor, obtained as
+% $$
+% \hat \delta_d^{SEB}\approx\frac{1}{L}\sum_{\ell=1}^L h(\by_{d}^{(\ell)}).
+% $$
+
+
+ \section{Function pbmseebBHF}\label{parbootmeth}
+
+ Function \verb"pbmseEB" gives parametric bootstrap MSE estimates for the EB estimators (\ref{EBpred})
+ under the BHF model. The call to the function is
+ \begin{verbatim}
+pbmseebBHF(formula, dom, selectdom, Xnonsample, B = 100, MC = 100,
+  data, transform = "BoxCox", lambda = 0, constant = 0, indicator)
+ \end{verbatim}
+ \vspace{-0.5 cm}
+ where the arguments are as in \verb"ebBHF", together with the number of bootstrap replicates \verb"B".
+ The function uses the parametric bootstrap of \cite{Gon:08}, which proceeds as follows:
+ \begin{itemize}
+ \item[1)] Fit the BHF model (\ref{nestedmodel}), deriving estimates $\hat\bbeta$,
+ $\hat\sigma_u^2$ and $\hat\sigma_e^2$.
+ \item[2)] Generate bootstrap domain effects as
+ $$
+ u_d^{*(b)}\stackrel{iid}\sim N(0,\hat\sigma_u^2),\quad d=1,\ldots,D.
+ $$
+ \item[3)] Generate, independently of $u_1^{*(b)},\ldots,u_D^{*(b)}$,
+ model errors
+ $$
+ e_{dj}^{*(b)}\stackrel{iid}\sim N(0,\hat\sigma_e^2),\quad j=1,\ldots, N_d,\
+ d=1,\ldots,D
+ $$
+ \item[4)] Generate a bootstrap population of $Y_{dj}$ values from the model
+ $$
+ Y_{dj}^{*(b)}=\bx_{dj}'\hat\bbeta+u_d^{*(b)}+e_{dj}^{*(b)},\quad
+ j=1,\ldots, N_d,\ d=1,\ldots,D.
+ $$
+ \item[5)] Let us define the area vector $\by_d^{*(b)}=(Y_{d1}^{*(b)},\ldots,Y_{dN_d}^{*(b)})'$.
+ Calculate target area quantities for the bootstrap population
+ $$
+ \delta_d^{*(b)}=h_d(\by_d^{*(b)}),\quad d=1,\ldots,D.
+ $$
+ \item[6)] For the original sample $s=s_1\cup\cdots \cup s_D$, let
+ $\by_s^{*(b)}$ be the vector containing the bootstrap observations
+ whose indices are in the sample, that is, containing $Y_{dj}^{*(b)}$, $j\in s_d$, $\d=1,\ldots,D$.
+ Fit again the BHF model (\ref{nestedmodel}) to bootstrap sample data $\by_s^{*(b)}$
+ and obtain bootstrap estimates $\hat{\sigma}^{2*(b)}_u$, $\hat{\sigma}^{2*(b)}_e$ and $\hat\bbeta^{*(b)}$.
+ \item[7)] Using the bootstrap sample data $\by_s^{*(b)}$, obtain the bootstrap EB estimators $\hat \delta_d^{*(b)}$, $d=1,\ldots,D$,
+ through the Monte Carlo approximation (\ref{EBpred}).
+ \item[8)] Repeat 2)--7) for $b=1,\ldots,B$, obtaining true value $\delta_d^{*(b)}$ and EB estimate $\hat\delta_d^{*(b)}$
+ for each area $d=1,\ldots,D$ and bootstrap sample $b=1,\ldots,B$.
+ \item[9)] The bootstrap MSE estimates returned by function \verb"pbmseEB" are given by
+ $$
+ \mbox{mse}_B(\hat \delta_d)= B^{-1}\displaystyle{\sum_{b=1}^B}
+ \left(\hat \delta_d^{*(b)}-\delta_d^{*(b)}\right)^2,\quad d=1,\ldots,D.
+ $$
+ \end{itemize}
+
+
+
+\addcontentsline{toc}{section}{References}
+\begin{thebibliography}{27}
+\expandafter\ifx\csname
+natexlab\endcsname\relax\def\natexlab#1{#1}\fi
+
+\bibitem[{Anselin(1988)}]{ans:88}\textsc{Anselin, L.}
+(1988).\newblock \textit{Spatial Econometrics. Methods and
+Models}. \newblock Boston: Kluwer Academic Publishers.
+
+%\bibitem[{Arora \& Lahiri(1997)}]{Aro:97}\textsc{Arora, V.} \& \textsc{Lahiri, P.} (1997).
+%\newblock Bayesian method over the BLUP in small area estimation problems.
+%\newblock \textit{Statistica Sinica} \textbf{7}, 1053--1063.
+
+\bibitem[{Banerjee, Carlin \& Gelfand(2004)Banerjee, Carlin \& Gelfand}]{ban:04}
+\textsc{Banerjee, S.}, \textsc{Carlin, B.} \& \textsc{Gelfand, A.}(2004).
+\newblock \textit{Hierarchical Modeling and Analysis for Spatial Data}. \newblock New York: Chapman and Hall.
+
+\bibitem[{Battese, Harter \& Fuller(1988)}]{Bat:88}\textsc{Battese, G. E.}, \textsc{Harter, R. M.} \& \textsc{Fuller, W. A.} (1988).
+\newblock An Error-Components Model for Prediction of County Crop Areas Using Survey and Satellite Data.
+\newblock \textit{Journal of the American  Statistical Association} \textbf{83}, 28--36.
+
+\bibitem[{Cressie(1993)}]{cressie:93}\textsc{Cressie, N.} (1993).
+\newblock \textit{Statistics for Spatial Data}.\newblock New York: John Wiley \& Sons.
+
+\bibitem[{Datta \& Lahiri(2000)}]{Dat:00}\textsc{Datta, G.\, S.} \& \textsc{Lahiri, P.} (2000).
+\newblock A unified measure of uncertainty of estimated best linear unbiased predictors  in small area estimation problems.
+\newblock \textit{Statistica Sinica} \textbf{10}, 613--627.
+
+\bibitem[{Datta, Rao \& Smith(2005)}]{Dat:05} \textsc{Datta, G.\, S.} \& \textsc{Rao, J.\,N.\,K.} \& \textsc{Smith D.\,D.}(2005).
+\newblock On measuring the variability of small area estimators under a basic area level model.
+\newblock \textit{Biometrika} \textbf{92}, 183--196.
+
+\bibitem[{Drew, Singh \& Choudhry(1982)}]{Drew:82} \textsc{Drew, D.}, \textsc{Singh, M.P.} \& \textsc{Choudhry, G.H.} (1982).
+\newblock Evaluation of small area estimation techniques for the Canadian Labour Force Survey.
+\newblock \textit{Survey Methodology} \textbf{8}, 17--47.
+
+\bibitem[{Fay \& Herriot(1979)}]{Fay:79} \textsc{Fay, R.} \& \textsc{Herriot, R.} (1979).
+\newblock Estimates of income for small places: an application of James--Stein procedures to census data.
+\newblock \textit{Journal of the American Statistical Association} \textbf{74}, 269--277.
+
+\bibitem[{Foster, Greer \& Thorbecke(1984)}]{Fos:84} \textsc{Foster, J.}, \textsc{Greer, J.} \& \textsc{Thorbecke, E.} (1984).
+\newblock A class of decomposable poverty measures.
+\newblock \textit{Econometrica} \textbf{52}, 761--766.
+
+\bibitem[{Gonz\'alez-Manteiga et al.(2008a)}]{Gon:08} \textsc{Gonz\'alez-Manteiga, W.}, \textsc{Lombard\'ia, M. J.},
+\textsc{Molina, I.}, \textsc{Morales, D.} \& \textsc{Santamar\'ia,
+L.} (2008a).
+\newblock Bootstrap mean squared error of a small-area EBLUP.
+\newblock \textit{Journal of Statistical Computation and Simulation} \textbf{78}, 443--462.
+
+\bibitem[{Gonz\'alez-Manteiga et al.(2008b)}]{Gon:08b}
+\textsc{Gonz\'alez-Manteiga, W.}, \textsc{Lombard\'ia, M.},
+\textsc{Molina, I.}, \textsc{Morales, D.} \& \textsc{Santamar\'ia,
+L.} (2008b). \newblock Analytic and bootstrap approximations of
+prediction errors under a multivariate Fay--Herriot model.
+\newblock \textit{Computational Statistics and Data Analysis}, \textbf{52}, 5242--5252.
+
+\bibitem[{Henderson(1975)}]{Henderson1975}\textsc{Henderson, C.R.} (1975). \newblock Best linear unbiased estimation and prediction under a selection model.
+\newblock \textit{Biometrics} \textbf{31}, 423-447.
+
+\bibitem[{Jiang(1996)}]{Jiang:96}\textsc{Jiang, J.} (1996). \newblock REML estimation: asymptotic behavior and related topics.
+\newblock \textit{Annals of Statistics} \textbf{24}, 255-286.
+
+
+\bibitem[{Marhuenda, Molina \& Morales(2013)}]{Mar:13}\textsc{Marhuenda, Y.}, \textsc{Molina, I.} \& \textsc{Morales, D.} (2013).
+\newblock Small area estimation with spatio-temporal Fay-Herriot models.
+\newblock \textit{Computational Statistics and Data Analysis} \textbf{58}, 308-325.
+
+\bibitem[{Molina, Salvati \& Pratesi(2009)}]{Mol:09}\textsc{Molina, I.}, \textsc{Salvati, N.} \& \textsc{Pratesi, M.} (2009).
+\newblock Bootstrap for estimating the MSE of the Spatial EBLUP.
+\newblock \textit{Computational Statistics} \textbf{24}, 441-458.
+
+\bibitem[{Molina \& Rao(2010)}]{Mol:10}\textsc{Molina, I.} \& \textsc{Rao, J.N.K.} (2010). \newblock Small area estimation of poverty indicators.
+\newblock \textit{The Canadian Journal of Statistics} \textbf{38}, 369-385.
+
+\bibitem[{Prasad \& Rao(1990)}]{Pras:90} \textsc{Prasad, N.} \& \textsc{Rao, J.N.K.} (1990).
+\newblock The estimation of the mean squared error of small-area estimators.
+\newblock \textit{Journal of the American Statistical Association} \textbf{85}, 163--171.
+
+\bibitem[{Petrucci \& Salvati(2006)}]{pet:06} \textsc{Petrucci, A.} \& \textsc{Salvati, N.} (2006).
+\newblock Small area estimation for spatial correlation in watershed erosion assessment.
+\newblock \textit{Journal of Agricultural, Biological and Environmental Statistics} \textbf{11}, 169--182.
+
+%\bibitem[{Pfeffermann \& Tiller(2006)}]{Pfeffermann:00} \textsc{Pfeffermann, D.} \& \textsc{Tiller, R.} (2005).
+%\newblock Bootstrap approximation to prediction MSE for state-space models with estimated parameters.
+%\newblock \textit{Journal of Time Series Analysis} \textbf{26}, 893--916.
+
+%\bibitem[{Royall \& Cumberland (1978)}]{roy:78} \textsc{Royall, R. M.} \& \textsc{Cumberland, W. G.} (1978).
+%\newblock Variance estimation in finite population sampling.
+%\newblock \textit{Journal of the American Statistical Association} \textbf{73}, 351--358.
+
+%\bibitem[\protect\citeauthoryear{Salvati, N., Ranalli, M. and Pratesi, M.}{2010}]{Salvatietal:10}
+%\noindent\hspace{-5mm} \textsc{Salvati, N., Ranalli, M. \& Pratesi, M.} (2010) Small area estimation of the mean using non-parametric M-quantile regression: a comparison when a linear mixed model does not hold. To appear in Journal of Statistical Computation and Simulation.
+
+\bibitem[{Singh, Shukla \& Kundu(2005)Singh, Shukla \& Kundu}]{sin:05}
+\textsc{Singh, B.}, \textsc{Shukla, G.} \& \textsc{Kundu, D.}(2005).
+\newblock Spatio-temporal models in small area estimation.
+\newblock \textit{Survey Methodology} \textbf{31}, 183--195.
+
+%\bibitem[{You \& Chapman(1979)}]{You:06} \textsc{You, Y.} \& \textsc{Chapman, B.} (1979).
+%\newblock Small Area Estimation Using Area Level Models and Estimated Sampling Variances.
+%\newblock \textit{Survey Methodology} \textbf{32}, 97--103.
+\end{thebibliography}
+
+
+\end{document}

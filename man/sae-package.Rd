@@ -10,8 +10,8 @@ This package provides a variety of functions for small area estimation, includin
 \tabular{ll}{
 Package: \tab sae\cr
 Type: \tab Package\cr
-Version: \tab 1.0-2\cr
-Date: \tab 2013-04-04\cr
+Version: \tab 1.0-5\cr
+Date: \tab 2015-03-30\cr
 License: \tab GPL-2\cr
 Depends: \tab nlme, MASS\cr
 }
