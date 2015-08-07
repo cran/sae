@@ -10,10 +10,10 @@ This package provides a variety of functions for small area estimation, includin
 \tabular{ll}{
 Package: \tab sae\cr
 Type: \tab Package\cr
-Version: \tab 1.0-5\cr
-Date: \tab 2015-03-30\cr
+Version: \tab 1.1\cr
+Date: \tab 2015-08-07\cr
 License: \tab GPL-2\cr
-Depends: \tab nlme, MASS\cr
+Depends: \tab stats, nlme, MASS\cr
 }
 
 %%~~ An overview of how to use the package, including the most important ~~
@@ -47,6 +47,8 @@ Depends: \tab nlme, MASS\cr
 Annals of Statistics 24, 255-286.
 
 - Marhuenda, Y., Molina, I. and Morales, D. (2013). Small area estimation with spatio-temporal Fay-Herriot models. Computational Statistics and Data Analysis 58, 308-325. 
+
+- Marhuenda, Y., Morales, D. and Pardo, M.C. (2014). Information criteria for Fay-Herriot model selection. Computational Statistics and Data Analysis 70, 268-280. 
 
 - Molina, I., Salvati, N. and Pratesi, M. (2009). Bootstrap for estimating the MSE of the Spatial EBLUP. Computational Statistics 24, 441-458.
 

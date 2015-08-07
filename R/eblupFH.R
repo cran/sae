@@ -1,6 +1,6 @@
 eblupFH <-
-function(formula,vardir,method="REML",MAXITER=100,PRECISION=0.0001,data) {
-
+function(formula,vardir,method="REML",MAXITER=100,PRECISION=0.0001,B=0,data)
+{
    result <- list(eblup=NA, 
                   fit=list(method=method, convergence=TRUE, iterations=0, estcoef=NA, 
                   refvar=NA, goodness=NA)
@@ -257,12 +257,79 @@ function(formula,vardir,method="REML",MAXITER=100,PRECISION=0.0001,data) {
   }  
 
   result$fit$estcoef  <- coef
-  result$fit$refvar    <- variance
+  result$fit$refvar   <- variance
   result$fit$goodness <- goodness
-
+  
   result$eblup <- EBLUP
+  
+  min2loglike <- (-2)*loglike
+  KIC <- min2loglike + 3 * (p+1)
 
+  if (B>=1) # Calculate AICc,AIcB1,AICb2,KICc,KICb1,KICb2
+  {
+    sigma2d   <- vardir
+    lambdahat <- result$fit$refvar
+    betahat   <- matrix(result$fit$estcoef[,"beta"],ncol=1)          
+    D <- nrow(X)
+    B1hatast <- 0
+    B3ast <- 0
+    B5ast <- 0
+    sumlogf_ythetahatastb     <- 0
+    sumlogf_yastbthetahatastb <- 0
+      
+    Xbetahat <- X%*%betahat
+    b <- 1
+    while (b<=B)
+    {
+      uastb <- sqrt(lambdahat)*matrix(data=rnorm(D, mean=0, sd=1), nrow=D, ncol=1)
+      eastb <- sqrt(sigma2d)*matrix(data=rnorm(D, mean=0, sd=1), nrow=D, ncol=1)
+      yastb <- Xbetahat + uastb + eastb
+        
+      resultb <- eblupFH(yastb~X-1,sigma2d,method=method,MAXITER=MAXITER,PRECISION=PRECISION) 
+      if (resultb$fit$convergence==FALSE)
+      {
+        message <- paste("Bootstrap b=",b,": ",method," iteration does not converge.\n")
+        cat(message)
+        next  # generar otra muestra
+      }else   
+      {
+        betahatastb   <- matrix(resultb$fit$estcoef[,"beta"],ncol=1) #beta
+        lambdahatastb <- resultb$fit$refvar 
+          
+        Xbetahathatastb2   <- (X%*%(betahat-betahatastb))^2
+        yastbXbetahatastb2 <- (yastb-X%*%betahatastb)^2          
+          
+        lambdahatastbsigma2d <- lambdahatastb + sigma2d
+          
+        lambdahatsigma2d <- lambdahat + sigma2d            
+        B1ast      <- sum((lambdahatsigma2d + Xbetahathatastb2 - yastbXbetahatastb2) / lambdahatastbsigma2d)
+        B1hatast   <- B1hatast + B1ast
+          
+        # AICb1, AICb2
+          logf <- (-0.5)*sum( log(2*pi*lambdahatastbsigma2d) + ((y-X%*%betahatastb)^2)/lambdahatastbsigma2d )  
+          sumlogf_ythetahatastb     <- sumlogf_ythetahatastb + logf #calculatelogf(X,y,lambdahatastb,betahatastb,sigma2d)
+          sumlogf_yastbthetahatastb <- sumlogf_yastbthetahatastb + resultb$fit$goodness["loglike"]
+
+          # KICc, KICb1, KICb2
+          B3ast <- B3ast + sum((lambdahatastbsigma2d + Xbetahathatastb2)/lambdahatsigma2d)
+          B5ast <- B5ast + sum(log(lambdahatastbsigma2d) + yastbXbetahatastb2/lambdahatastbsigma2d)
+          
+          b <- b+1
+        }
+      }  #while (b<=nB)
+      B2ast  <- sum(log(lambdahatsigma2d)) + B3ast/B - B5ast/B
+      
+      AICc   <- min2loglike + B1hatast/B  
+      AICb1  <- as.vector(min2loglike -2/B*(sumlogf_ythetahatastb - sumlogf_yastbthetahatastb))  
+      AICb2  <- as.vector(min2loglike -4/B*(sumlogf_ythetahatastb - result$fit$goodness["loglike"]*B))
+      KICc   <- AICc  + B2ast  
+      KICb1  <- AICb1 + B2ast  
+      KICb2  <- AICb2 + B2ast    
+      result$fit$goodness <- c(result$fit$goodness,KIC=KIC,AICc=AICc,AICb1=AICb1,AICb2=AICb2,KICc=KICc,KICb1=KICb1,KICb2=KICb2,nBootstrap=B)    
+  } ### if (B>=1) 
+  else 
+     result$fit$goodness <- c(result$fit$goodness,KIC=KIC,AICc=NA,AICb1=NA,AICb2=NA,KICc=NA,KICb1=NA,KICb2=NA,nBootstrap=B)   
+  
   return(result)
-
 }
 

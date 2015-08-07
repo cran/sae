@@ -1,14 +1,14 @@
 Package: sae
 Type: Package
 Title: Small Area Estimation
-Version: 1.0-5
-Date: 2015-03-30
+Version: 1.1
+Date: 2015-08-07
 Author: Isabel Molina, Yolanda Marhuenda
 Maintainer: Yolanda Marhuenda <y.marhuenda@umh.es>
-Depends: nlme, MASS
+Depends: stats, nlme, MASS
 Description: Functions for small area estimation.
 License: GPL-2
-Packaged: 2015-03-30 08:53:49 UTC; hp
+Packaged: 2015-07-08 08:30:21 UTC; hp
 NeedsCompilation: no
 Repository: CRAN
-Date/Publication: 2015-03-30 15:07:58
+Date/Publication: 2015-07-08 11:16:38

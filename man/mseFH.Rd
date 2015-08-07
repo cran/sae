@@ -8,7 +8,8 @@
  fitting methods.
 }
 \usage{
-mseFH(formula, vardir, method = "REML", MAXITER = 100, PRECISION = 0.0001, data)
+mseFH(formula, vardir, method = "REML", MAXITER = 100, PRECISION = 0.0001, B = 0, 
+      data)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -22,7 +23,8 @@ mseFH(formula, vardir, method = "REML", MAXITER = 100, PRECISION = 0.0001, data)
                  Default is \code{"REML"} method.}
  \item{MAXITER}{maximum number of iterations allowed in the Fisher-scoring algorithm.
                   Default is 100 iterations.}
-  \item{PRECISION}{convergence tolerance limit for the Fisher-scoring algorithm. Default value is \code{0.0001}.}                 
+  \item{PRECISION}{convergence tolerance limit for the Fisher-scoring algorithm. Default value is \code{0.0001}.}   
+\item{B}{number of bootstrap replicates to calculate the goodness-of-fit measures proposed by Marhuenda et al. (2014). Default value is \code{0} indicating that these measures are not calculated.}  
   \item{data}{optional data frame containing the variables named in \code{formula} and \code{vardir}. By default the variables are taken from the environment from which \code{mseFH} is called.}                 
 }
 \details{
@@ -52,6 +54,8 @@ best linear unbiased predictors in small area estimation problems. Statistica Si
 
 - Jiang, J. (1996). REML estimation: asymptotic behavior and related topics.
 Annals of Statistics 24, 255-286.
+
+- Marhuenda, Y., Morales, D. and Pardo, M.C. (2014). Information criteria for Fay-Herriot model selection. Computational Statistics and Data Analysis 70, 268-280.
 
 - Prasad, N. and Rao, J. (1990). The estimation of the mean squared error of small-area estimators. Journal of the American Statistical Association 85, 163-171.
 

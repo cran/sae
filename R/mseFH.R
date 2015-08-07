@@ -1,5 +1,5 @@
 mseFH <-
-function(formula,vardir,method="REML",MAXITER=100,PRECISION=0.0001,data)
+function(formula,vardir,method="REML",MAXITER=100,PRECISION=0.0001,B=0,data)
 {
    result <- list(est=NA, mse=NA)
 
@@ -28,7 +28,7 @@ function(formula,vardir,method="REML",MAXITER=100,PRECISION=0.0001,data)
       stop("Argument vardir=",namevar," contains NA values.")
 
 
-   result$est <- eblupFH(y~X-1,vardir,method,MAXITER,PRECISION)
+   result$est <- eblupFH(y~X-1,vardir,method,MAXITER,PRECISION,B)
    if (result$est$fit$convergence==FALSE) 
    {
       warning("The fitting method does not converge.\n") 

@@ -167,7 +167,7 @@ ebBHF <- function(formula,dom,selectdom,Xnonsample,MC=100,data,transform="BoxCox
       {
          ysd    <- NULL               # Get sample values for target domain
          mudpred<-Xrd%*%betaest       # Compute conditional means for out-of-sample units
-         gammad <-1
+         gammad <- 0
       }
       sigmav2<-sigmau2est*(1-gammad)
       sqrtsigmav2<-sqrt(sigmav2)

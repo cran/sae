@@ -1,32 +1,17 @@
-year <- sub("-.*", "", meta$Date)
 
-note <- sprintf("R package version %s", meta$Version)
-
-
-bibentry(bibtype = "Misc",
+bibentry(
+         bibtype = "Article",
 	 
-         title = "{sae}: An R package for Small Area Estimation",
-	 
-         year = "2015",
-
-         author = c(person("Isabel", "Molina"),
+         author  = c(person("Isabel", "Molina"),
 	     
-                    person("Yolanda", "Marhuenda")),
-         note = "forthcoming in \\emph{The R Journal}")
-
-bibentry(bibtype = "Manual",
-	 
-         title = "{sae}: Small area estimation",
-	 
-         author = c(person("Isabel", "Molina"),
-	     
-                    person("Yolanda", "Marhuenda")),
-
-	 year = year,
-	 
-         note = note,
-	 
-         url = "http://CRAN.R-project.org/package=sae")
-
-
-
+                     person("Yolanda", "Marhuenda")),
+         title   = "{sae}: An {R} Package for Small Area Estimation", 
+         journal = "The R Journal",         
+         year    = "2015",
+         volume  = "7",
+         number  = "1",
+         pages   = "81--98",
+         month   = "jun",
+         url     = "http://journal.r-project.org/archive/2015-1/molina-marhuenda.pdf",
+         key     = "molina-marhuenda:2015"
+)
