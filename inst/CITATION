@@ -12,6 +12,6 @@ bibentry(
          number  = "1",
          pages   = "81--98",
          month   = "jun",
-         url     = "http://journal.r-project.org/archive/2015-1/molina-marhuenda.pdf",
+         url     = "https://journal.r-project.org/archive/2015/RJ-2015-007/RJ-2015-007.pdf",
          key     = "molina-marhuenda:2015"
 )

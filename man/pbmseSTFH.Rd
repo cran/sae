@@ -6,7 +6,10 @@ Calculates parametric bootstrap mean squared error estimates of the EBLUPs based
 }
 \usage{
 pbmseSTFH(formula, D, T, vardir, proxmat, B = 100, model = "ST", 
-          MAXITER = 100, PRECISION = 0.0001, data)
+          MAXITER = 100, PRECISION = 0.0001, theta_iter = FALSE,
+          sigma21_start = 0.5 * median(vardir), rho1_start = 0.5, 
+          sigma22_start = 0.5 * median(vardir), rho2_start = 0.5, 
+          data)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -24,7 +27,12 @@ pbmseSTFH(formula, D, T, vardir, proxmat, B = 100, model = "ST",
                within domains).}
   \item{MAXITER}{maximum number of iterations allowed for the Fisher-scoring algorithm. Default value is \code{100}.}
   \item{PRECISION}{convergence tolerance limit for the Fisher-scoring algorithm. Default value is \code{0.0001}.}
-  \item{data}{optional data frame containing the variables named in \code{formula} and \code{vardir}. By default the variables are taken from the environment from which \code{pbmseSTFH} is called.}  
+  \item{theta_iter}{If \code{TRUE} the estimated values of area effects variance, area effects spatial autocorrelation, area-time effects variance and time autocorrelation parameter of the area-time effects of each iteration of the fitting algorithm are returned in \code{est$estvarcomp_iterations}.}  
+  \item{sigma21_start}{Starting value of the area effects variance in the fitting algorithm. Default value is \code{0.5*median(vardir)}.}
+  \item{rho1_start}{Starting value of the area effects spatial autocorrelation parameter in the fitting algorithm. Default value is \code{0.5}.}
+  \item{sigma22_start}{Starting value of the area-time effects variance in the fitting algorithm. Default value is \code{0.5*median(vardir)}.}
+  \item{rho2_start}{Starting value of the time autocorrelation parameter of the area-time effects in the fitting algorithm. Default value is \code{0.5}.}
+  \item{data}{optional data frame containing the variables named in \code{formula} and \code{vardir}. By default the variables are taken from the environment from which \code{pbmseSTFH} is called.}   
 }
 
 \details{
@@ -72,7 +80,7 @@ T <- length(unique(spacetime$Time)) # number of time instant
 # Calculate MSEs of EBLUPs under the spatio-temporal Fay-Herriot model
 # with uncorrelated time effects nested within domains (model S)
 set.seed(123)
-resultS <- pbmseSTFH(Y ~ X1 + X2, D, T, Var, spacetimeprox, B=40, 
+resultS <- pbmseSTFH(Y ~ X1 + X2, D, T, Var, spacetimeprox, B=10, 
                      model="S", data=spacetime)
 
 # Print direct estimates, variance, "S" model estimates, mse and 
@@ -90,7 +98,7 @@ print(output[output[,"Period"]==lastperiod,], row.names=FALSE)
 # with AR(1) time effects nested within each area
 attach(spacetime)
 set.seed(123)
-resultST <- pbmseSTFH(Y ~ X1 + X2, D, T, vardir=Var, spacetimeprox, B=40)  
+resultST <- pbmseSTFH(Y ~ X1 + X2, D, T, vardir=Var, spacetimeprox, B=10)  
 
 # Print direct estimates, variance, "ST" model estimates, mse and 
 # residuals of the last time instant.

@@ -328,7 +328,7 @@ function(formula,vardir,method="REML",MAXITER=100,PRECISION=0.0001,B=0,data)
       result$fit$goodness <- c(result$fit$goodness,KIC=KIC,AICc=AICc,AICb1=AICb1,AICb2=AICb2,KICc=KICc,KICb1=KICb1,KICb2=KICb2,nBootstrap=B)    
   } ### if (B>=1) 
   else 
-     result$fit$goodness <- c(result$fit$goodness,KIC=KIC,AICc=NA,AICb1=NA,AICb2=NA,KICc=NA,KICb1=NA,KICb2=NA,nBootstrap=B)   
+     result$fit$goodness <- c(result$fit$goodness,KIC=KIC)   
   
   return(result)
 }

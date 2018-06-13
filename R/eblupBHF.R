@@ -116,25 +116,35 @@ function(formula,dom,selectdom,meanxpop,popnsize,method="REML",data)
 
 # Fit the nested-error model to sample data by REML/ML 
 # method using function lme from library nlme. 
-   fit.EB<-try(lme(ys~-1+Xs,random=~1|as.factor(dom),method=method))
+   #fit.EB<-try(lme(ys~-1+Xs,random=~1|as.factor(dom),method=method))
+   
+   if (method=="REML")
+      fit.EB<-try(lmer(ys~-1+Xs+(1|dom),REML=TRUE))
+   else if (method=="ML")
+      fit.EB<-try(lmer(ys~-1+Xs+(1|dom),REML=FALSE))
+   else
+     stop("   Argument method=\"",method,"\" must be \"REML\" or \"ML\".\n")
+   
    if (class(fit.EB)=="try-error")   # Aqui en el caso de que se llame desde pbmseBHF
                                      # habria que generar otra muestra
    {
       #options(warn = 0)
       #stop("lme function within eblupBHF.")
-      warning("lme function within eblupBHF.")
+      warning("lmer function within eblupBHF.")
       return (result)
    }
 
-# Create a list object containing different results from the model fit.
-   Resultsfit<-list(summary=summary(fit.EB), fixed=fixed.effects(fit.EB),
-                    random=random.effects(fit.EB), errorvar=fit.EB$sigma^2,
-                    refvar=as.numeric(VarCorr(fit.EB)[1,1]), loglike=fit.EB$logLik,
-                    residuals=fit.EB$residuals[1:n])
+   # Save some of the results of the fitting method in variables
+   betaest   <-matrix(fixef(fit.EB),nrow=p,ncol=1) # Vector of model coefficients (size p)
+   upred     <-ranef(fit.EB)$dom                  # Predicted random effects: Watch out! It is not a vector, it is a matrix with 1 column
 
-# Save some of the results of the fitting method in variables
-   betaest   <-matrix(fixed.effects(fit.EB),nrow=p,ncol=1)  # Vector of model coefficients (size p)
-   upred     <-random.effects(fit.EB)                   # Predicted random effects: Watch out! It is not a vector, it is a matrix with 1 column
+   # Create a list object containing different results from the model fit.
+   Resultsfit<-list(summary=summary(fit.EB), fixed=fixef(fit.EB),
+                    random=upred, 
+                    errorvar=summary(fit.EB)$sigma^2,
+                    refvar=as.numeric(VarCorr(fit.EB)), 
+                    loglike=logLik(fit.EB)[1],
+                    residuals=as.vector(residuals(fit.EB)))
 
    eblup <- rep(0,I)
    meanXsd <- matrix(0,nrow=1,ncol=p)
