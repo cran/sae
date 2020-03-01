@@ -111,7 +111,7 @@ eblupSTFH <- function (formula, D, T, vardir, proxmat, model = "ST", MAXITER = 1
     rho1_k <- thetak["rho1", 1]
     sigma22_k <- thetak["sigma22", 1]
     Omega1rho1_k <- try(solve(crossprod(Id - rho1_k * proxmat)), silent=TRUE)
-    if (class(Omega1rho1_k) == "try-error") {
+    if (class(Omega1rho1_k)[1] == "try-error") {
       result$fit$convergence <- FALSE
       #if (theta_iter == FALSE)
       #   result$fit$estvarcomp_iterations <- NULL
@@ -151,7 +151,7 @@ eblupSTFH <- function (formula, D, T, vardir, proxmat, model = "ST", MAXITER = 1
       invAZ1 <- invA %*% Z1
     }
     invVu1 <- try(solve(Vu1), silent=TRUE)
-    if (class(invVu1)=="try-error"){
+    if (class(invVu1)[1]=="try-error"){
       result$fit$convergence <- FALSE
       #if (theta_iter == FALSE)
       #  result$fit$estvarcomp_iterations <- NULL      
@@ -217,7 +217,7 @@ eblupSTFH <- function (formula, D, T, vardir, proxmat, model = "ST", MAXITER = 1
     for (a in 2:nparam) for (b in 1:(a - 1)) F[a, b] <- F[b,a] 
  
     Finv <- try(solve(F), silent=TRUE)   
-    if (class(Finv) == "try-error") {
+    if (class(Finv)[1] == "try-error") {
       result$fit$convergence <- FALSE
       #if (theta_iter == FALSE)
       #  result$fit$estvarcomp_iterations <- NULL      
@@ -268,7 +268,7 @@ eblupSTFH <- function (formula, D, T, vardir, proxmat, model = "ST", MAXITER = 1
     return(result)
   }
   Omega1rho1_k <- try(solve(crossprod(Id - rho1_k * proxmat)))
-  if (class(Omega1rho1_k) == "try-error") {
+  if (class(Omega1rho1_k)[1] == "try-error") {
     result$fit$convergence <- FALSE
     result$fit$estvarcomp <- data.frame(estimate = thetakmas1, 
                                         std.error = 0)
@@ -309,7 +309,7 @@ eblupSTFH <- function (formula, D, T, vardir, proxmat, model = "ST", MAXITER = 1
   Vu1 <- sigma21_k * Omega1rho1_k
   if (sigma21_k != 0) {
     invVu1 <- try(solve(Vu1), silent = TRUE)
-    if (class(invVu1) == "try-error") {
+    if (class(invVu1)[1] == "try-error") {
       result$fit$convergence <- FALSE
       result$fit$estvarcomp <- data.frame(estimate = thetakmas1, 
                                           std.error = 0)
@@ -338,7 +338,7 @@ eblupSTFH <- function (formula, D, T, vardir, proxmat, model = "ST", MAXITER = 1
                     ncol = 1)
   mudtest <- X %*% betaest + u1dtest + u2dtest
   V <- try(solve(invV))
-  if (class(V)=="try-error"){
+  if (class(V)[1]=="try-error"){
     result$fit$convergence <- FALSE
     result$fit$estvarcomp <- data.frame(estimate = thetakmas1, 
                                         std.error = 0)

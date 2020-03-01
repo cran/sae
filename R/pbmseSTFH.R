@@ -64,7 +64,7 @@ function (formula, D, T, vardir, proxmat, B = 100, model = "ST",
   msedt <- 0
   Id <- diag(1, nrow = D, ncol = D)
   Omega1rho1 <- try(solve(crossprod(Id - rho1 * proxmat)))
-  if (class(Omega1rho1) == "try-error") {
+  if (class(Omega1rho1)[1] == "try-error") {
     result$mse <- 0
     return(result)
   }
